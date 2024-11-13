@@ -1,26 +1,35 @@
 import './Header.css';
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import account_icon_placeholder from '../images/account_icon_placeholder.png';
+import { Navbar, Nav, NavDropdown, Container, Image } from 'react-bootstrap';
 
-// TODO: Add links to different pages
 export default function Header() {
   return (
     <header>
-      <div className='navbar'>
-        <div className='links'>
-          <a href='/'>Home</a>
-          <a href='/movies'>Movies</a>
-          <a href='/showtimes'>Showtimes</a>
-          <a href='/favorites'>Favorites</a>
-          <a href='/reviews'>Reviews</a>
-          <a href='/groups'>Groups</a>
-        </div>
-        <div className='dropdown' id='account-icon'>
-          <button className='dropbtn'>
-            <img src={account_icon_placeholder}></img>
-          </button>
-        </div>
-      </div>
+    <Navbar bg="light" variant="light">
+      <Container>
+        <Navbar.Toggle aria-controls="basic-navbar-nav" />
+        <Navbar.Collapse id="basic-navbar-nav">
+          <Nav className='me-auto'>
+            <Nav.Link href='/'>Home</Nav.Link>
+            <Nav.Link href='/movies'>Movies</Nav.Link>
+            <Nav.Link href='/showtimes'>Showtimes</Nav.Link>
+            <Nav.Link href='/favorites'>Favorites</Nav.Link>
+            <Nav.Link href='/reviews'>Reviews</Nav.Link>
+            <Nav.Link href='/groups'>Groups</Nav.Link>
+          </Nav>
+          <Nav className="me-auto">
+            <NavDropdown title={<Image src={account_icon_placeholder}></Image>} id="basic-nav-dropdown">
+              <NavDropdown.Item href="/account">Account</NavDropdown.Item>
+              <NavDropdown.Item href="/signup">Sign up</NavDropdown.Item>
+              <NavDropdown.Item href="/signin">Sign in</NavDropdown.Item>
+              <NavDropdown.Item href="/myfavorites">My favorites</NavDropdown.Item>
+              <NavDropdown.Item id='logout-btn' href="/logout">Log out</NavDropdown.Item>
+            </NavDropdown>
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
     </header>
   );
 }

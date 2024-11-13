@@ -10,6 +10,7 @@ import Showtimes from './screens/Showtimes.js';
 import Favorites from './screens/Favorites.js';
 import Reviews from './screens/Reviews.js';
 import Groups from './screens/Groups.js';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 // TODO: Add routes for different elements
 const router = createBrowserRouter([
