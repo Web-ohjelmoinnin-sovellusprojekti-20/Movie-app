@@ -1,0 +1,24 @@
+.review-form {
+    /* display: none; */
+}
+
+.review-addition-box {
+    border: 2px solid, black;
+    padding: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.submit-button {
+    margin-right: 5px;
+}
+
+.review-list {
+    border: 2px solid, black;
+}
+
+.review {
+    border: 1px solid, black;
+    margin: 10px;
+    padding: 10px;
+}
