@@ -11,6 +11,8 @@ import Favorites from './screens/Favorites.js';
 import Reviews from './screens/Reviews.js';
 import Groups from './screens/Groups.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Signup from './screens/Signup_page.js';
+import Signin from './screens/Signin_page.js';
 
 // TODO: Add routes for different elements
 const router = createBrowserRouter([
@@ -37,6 +39,14 @@ const router = createBrowserRouter([
   {
     path: '/groups',
     element: <Groups></Groups>
+  },
+  {
+    path: '/signup',
+    element: <Signup></Signup>
+  },
+  {
+    path: '/signin',
+    element: <Signin></Signin>
   }
 ]);
 
