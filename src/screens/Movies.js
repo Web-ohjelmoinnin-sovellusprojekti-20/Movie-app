@@ -1,38 +1,48 @@
 import './Movies.css';
 import React, { useState } from 'react';
-//TODO: dropdown list!
+import { Nav, Navbar, Button, Form } from 'react-bootstrap';
+import Dropdown from 'react-bootstrap/Dropdown'
+
+//TODO: search for movies, if there's one show, if there's none say there's none with such name
 export default function Movies() {
+
   const [movie, setMovie] = useState('')
   const [result, setResult] = useState('')
-    function searchHandle (e){
+
+
+  function searchHandle (e){
       e.preventDefault();
       setResult("You searched for " + movie)
   }
-  function dropHandle(){
-    document.getElementById("dropdown").classList.toggle("show")
-  }
+
+
   return (
     <div>Movies
-      <search>
-      <form onSubmit={searchHandle}>
-        <input placeholder='Type here...'
-        value={movie}
-        onChange={e => setMovie(e.target.value)}
+      <Form onSubmit={searchHandle}>
+        <Form.Control type="text" placeholder='Type here...'
+        className="mt2"
         /> 
-        <button
-        title="Search"
+      </Form>
+      <Form>
+      <Dropdown title="Test"
+        id="test-dpdown"
+        >
+        <Dropdown.Toggle id="dropdown-basic"
+        variant="secondary">
+        Filters
+      </Dropdown.Toggle>
+        <Dropdown.Menu onClick={(e) => e.stopPropagation()}>
+        <Form.Check 
+        type='checkbox'
+        label='Check'
         />
-      </form>
-      <div className = "dropdown">
-          <button onClick={dropHandle}></button>
-          <div id = "dropdown" class = "dropdown-list">
-            <input type='checkbox' id="check1" value="Check1"></input>
-            <label for="check1">Checkbox number juan</label>
-            <input type='checkbox' id="check2" value="Check2"></input>
-            <label for="check2">Checkbox number dos</label>
-          </div>
-        </div>
-      </search>
+        <Form.Check 
+        type='checkbox'
+        label='Check'
+        />
+        </Dropdown.Menu>
+      </Dropdown>
+      </Form>
       <label>{result}</label>
     </div>
   );
