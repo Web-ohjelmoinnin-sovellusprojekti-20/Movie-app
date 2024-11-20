@@ -1,0 +1,41 @@
+.page-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.header-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    padding: 10px;
+    border: 2px solid black;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.content-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 20px;
+    gap: 20px;
+}
+
+.content-card {
+    width: 50%;
+}
+
+.right-panel {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    gap: 20px;
+}
+
+.member-list {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
