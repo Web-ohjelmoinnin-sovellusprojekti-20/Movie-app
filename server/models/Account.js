@@ -1,7 +1,16 @@
 import { pool } from '../helpers/db.js';
 
 const insertAccount = async (email, hashedPassword) => {
-    return await pool.query('insert into account (email, password) values ($1,$2)' [email, hashedPassword]);
+    try {
+        const result = await pool.query(
+            'INSERT INTO account (email, password) VALUES ($1, $2) RETURNING *',
+            [email, hashedPassword]
+        );
+        return result;
+    } catch (error) {
+        console.error('Error inserting account:', error);
+        throw new Error('Database error');
+    }
 };
 
 const selectAccountByEmail = async (email) => {

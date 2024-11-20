@@ -13,17 +13,30 @@ const createAccountObject = (email, token=undefined) => {
         ...(token !== undefined && {'token': token})
     }
 };
+
+const getAccountEmail = async (request,response, next) => {
+    try {
+        selectAccountByEmail(request.body.email);
+        return response.status(200).json(createAccountObject(request.body.email));
+    } catch (error) {
+        return next(error);
+    }
+};
 // Email has to be an email address
 // Password has to contain 8 characters, a capital letter and a number
 const postAccountRegistration = async (request, response, next) => {
     try {
+        console.log('In registration');
         const email = request.body.email;
         const password = request.body.password;
+        console.log(email+' : '+password);
         if (!email || email.length === 0 || !/@/.test(email)) return next(new ApiError('Invalid email for registration',400));
-        if (!password || password.length === 0 || !contains_capital_letter_and_a_number(password)) return next(new ApiError('Invalid password for registration',400));
-        if ((await selectAccountByEmail(request.body.email)).rowCount !== 0) return next(new ApiError('Email already in use',400));
-        const hashedPassword = await hash(request.body.password, 10);
-        const accountFromDb = await insertAccount(request.body.email, hashedPassword);
+        if (!password || password.length < 8 || !contains_capital_letter_and_a_number(password)) return next(new ApiError('Invalid password for registration',400));
+        if ((await selectAccountByEmail(email)).rowCount !== 0) return next(new ApiError('Email already in use',400));
+        console.log('Passed error handling');
+        const hashedPassword = await hash(password, 10);
+        console.log('Hashing done');
+        const accountFromDb = await insertAccount(email, hashedPassword);
         const account = await accountFromDb.rows[0];
         return response.status(201).json(createAccountObject(account.email));
     } catch (error) {
@@ -36,13 +49,14 @@ const postAccountLogin = async (request, response, next) => {
     try {
         const email = request.body.email;
         const password = request.body.password;
-        if (!email || email.length === 0) return next(new ApiError('Invalid email for login',400));
+        if (!email || email.length === 0) return next(new ApiError(invalid_credentials_message,401));
+
         const accountFromDb = await selectAccountByEmail(email);
-        if (accountFromDb.rowCount === 0) return next(new ApiError(invalid_credentials_message,500));
+        if (accountFromDb.rowCount === 0) return next(new ApiError(invalid_credentials_message,401));
 
         const account = accountFromDb.rows[0];
         if (!await compare(password,account.password)) return next(new ApiError(invalid_credentials_message,401));
-
+        
         const token = sign(email, process.env.JWT_SECRET_KEY);
 
         return response.status(200).json(createAccountObject(account.email,token));
@@ -74,4 +88,4 @@ const deleteAccount = async (request,response,next) => {
     }
 };
 
-export { postAccountRegistration, postAccountLogin, deleteAccount };
+export { postAccountRegistration, postAccountLogin, deleteAccount, getAccountEmail };

@@ -4,8 +4,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "devStart": "nodemon index.js"
+    "test": "cross-env NODE_ENV=test mocha *test.js",
+    "devStart": "cross-env NODE_ENV=development nodemon index.js",
+    "testStart": "cross-env NODE_ENV=test nodemon index.js"
   },
   "keywords": [],
   "author": "",
