@@ -1,10 +1,13 @@
 import './Groups.css';
 import React, { useEffect, useState } from 'react';
 import { Button, Container, Form } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 export default function Groups() {
 
   const [groups, setGroups] = useState([]);
   const [groupName, setGroupName] = useState('');
+  const [iconStates, setIconStates] = useState([]);
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -14,17 +17,20 @@ export default function Groups() {
     e.preventDefault();
     if (groupName.trim() !== '') {
       setGroups([...groups, groupName]);
+      setIconStates([...iconStates, false]);
       setGroupName('');
     }
   };
 
-  const handleButtonClick = (e) => {
-    e.preventDefault(e);
+  const handleButtonClick = (group) => {
+    navigate("/group_page", { state: { groupName: group } });
   };
 
-  const handleIconClick = (e) => {
-    e.preventDefault(e);
-
+  const handleIconClick = (index, e) => {
+    e.stopPropagation();
+    const updatedIconStates = [...iconStates];
+    updatedIconStates[index] = !updatedIconStates[index];
+    setIconStates(updatedIconStates);
   };
 
   return (
@@ -50,7 +56,7 @@ export default function Groups() {
         </Form>
       </div>
 
-      <div class="list-group">
+      <div className="list-group">
         <h6>
         All current groups:
         </h6>
@@ -59,14 +65,18 @@ export default function Groups() {
             variant="primary" type="submit"
             className="d-flex align-items-center list-group-item"
             key={index}
-            onClick={() => handleButtonClick()}
+            onClick={() => handleButtonClick(group)}
           >
             {group}
             <Button
-            variant="secondary" type="button" className="d-flex align-items-center ms-auto"
-            onClick={() => handleIconClick()}
+            variant="btn-primary" type="button" className="d-flex align-items-center ms-auto"
+            onClick={(e) => handleIconClick(index, e)}
             >
-            <i className="bi bi-person-fill-add"></i>
+              {iconStates[index] ? (
+                <i className="bi bi-person-fill-check"></i>
+              ) : (
+                <i className="bi bi-person-fill-add"></i>
+              )}
             </Button>
           </Button>
         ))}
@@ -74,5 +84,3 @@ export default function Groups() {
     </Container>
   );
 }
-
-//note: bi bi-person-fill-check => application sent to group icon
