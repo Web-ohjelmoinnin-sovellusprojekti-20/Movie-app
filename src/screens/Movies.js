@@ -1,23 +1,46 @@
 import './Movies.css';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Form } from 'react-bootstrap';
 import Dropdown from 'react-bootstrap/Dropdown'
 import { getMovieByName } from '../components/movieAPI';
-
-//TODO: search for movies, if there's one show, if there's none say there's none with such name
+//TODO: Ei elokuvia notifikaatio,
 export default function Movies() {
 
   const [movie, setMovie] = useState('')
   const [result, setResult] = useState('')
   const [moviesData, setmoviesData] = useState('')
+  const [selectedGenres, setSelectedGenres] = useState({})
+
+  const genreMap = {
+    'Action': 28,
+    'Adventure': 12,
+    'Animation': 16,
+    'Comedy': 35,
+    'Crime': 80,
+    'Documentary': 99,
+    'Drama': 18,
+    'Family': 10751,
+    'Fantasy': 14,
+    'History': 36,
+    'Horror': 27,
+    'Music': 10402,
+    'Mystery': 9648,
+    'Romance': 10749,
+    'Science Fiction': 878,
+    'TV Movie': 10770,
+    'Thriller': 53,
+    'War': 10752,
+    'Western': 37
+  };
 
 
   const searchHandle = async (e) => {
       e.preventDefault();
       setResult("You searched for " + movie + ". Displaying results..")
+      const genreIds = Object.keys(selectedGenres).filter(genre => selectedGenres[genre]).map(genre => genreMap[genre])
 
       try {
-        const data = await getMovieByName(movie)
+        const data = await getMovieByName(movie, genreIds)
         setmoviesData(data)
         console.log("testi");
       }
@@ -30,6 +53,14 @@ export default function Movies() {
   const handleInputChange = (e) => {
     setMovie(e.target.value);
   };
+
+  const handleCheckChange = useCallback((genre) => {
+        setSelectedGenres(prevState => ({
+          ...prevState,
+          [genre]: !prevState[genre],
+        }))
+      
+  }, [])
 
 
 
@@ -51,14 +82,19 @@ export default function Movies() {
         Filters
       </Dropdown.Toggle>
         <Dropdown.Menu onClick={(e) => e.stopPropagation()}>
+          {[
+            'Action', 'Adventure', 'Animation', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Family',
+            'Fantasy', 'History', 'Horror', 'Music', 'Mystery', 'Romance', 'Science Fiction',
+            'TV Movie', 'Thriller', 'War', 'Western'
+          ].map(genre => (
         <Form.Check 
         type='checkbox'
-        label='Check'
+        key={genre}
+        label={genre}
+        checked={selectedGenres[genre] || false}
+        onChange={() => handleCheckChange(genre)}
         />
-        <Form.Check 
-        type='checkbox'
-        label='Check'
-        />
+        ))}   
         </Dropdown.Menu>
       </Dropdown>
       </Form>
