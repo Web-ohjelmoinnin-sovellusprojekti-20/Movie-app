@@ -7,13 +7,9 @@ const key = '&api_key=e39b43c4f5b8bda212cacb543bd29bad'
 
 const getMovieByName = async (name, genreIds) => {
     try {
-        /*const genreQuery = genreIds.length ? '&with_genres=' + genreIds.join(',') : ''
-        console.log({genreQuery})
-        */
         const response = await axios.get(url + name + '&language=en-US&page=1' + key )
         console.log({name})
         let movies = response.data.results
-
         if (genreIds.length > 0) {
             console.log("Tässä on testi:" + genreIds)
             movies = movies.filter(movie => {
@@ -24,9 +20,7 @@ const getMovieByName = async (name, genreIds) => {
                  return flatIds.every(genreId => genreIds.includes(genreId))
             }
             );
-
-            console.log("Tässä on testi 2")
-            
+            console.log("Tässä on testi 2")          
           }
           console.log("Tässä on testi 3")
         return movies.sort((a,b) => b.popularity - a.popularity )

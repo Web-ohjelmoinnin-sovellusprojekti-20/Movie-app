@@ -1,6 +1,6 @@
 import './Movies.css';
 import React, { useCallback, useState } from 'react';
-import { Form } from 'react-bootstrap';
+import { Form, Card, Row, Col, Container } from 'react-bootstrap';
 import Dropdown from 'react-bootstrap/Dropdown'
 import { getMovieByName } from '../components/movieAPI';
 //TODO: Ei elokuvia notifikaatio,
@@ -99,17 +99,23 @@ export default function Movies() {
       </Dropdown>
       </Form>
       <label>{result}</label>
-      <pre>
+      <Container>
+      <Row>
       {moviesData && (
         moviesData.map((movie) => (
-        <div>
-        <pre>
+          <Col lg={3} md={3} sm={6} xs={12}>
+        <Card>
+          <Card.Img src= {`https://image.tmdb.org/t/p/w500${movie.poster_path}`} fluid/>
+          <Card.Title>{movie.original_title}</Card.Title>
           {JSON.stringify(movie,null,2)}
-        </pre>
-        </div>
+        </Card>
+        </Col>
         ))
       )}
-      </pre>
+      </Row>
+      </Container>
     </div>
   );
 }
+
+//{JSON.stringify(movie,null,2)} ! Jos tarvitsee nähdä JSONit
