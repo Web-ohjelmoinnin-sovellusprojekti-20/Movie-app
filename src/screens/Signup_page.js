@@ -1,16 +1,31 @@
 import './Sign_in_up.css';
 import React, { useEffect, useState } from 'react';
 import { Button, Container, Form } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAccount } from '../context/useAccount.js';
 
 
 export default function Signup() {
 
-    const [] = useState([]);
-    const [] = useState('');
+    const { account, setAccount, signUp} = useAccount();
+    const [ validated, setValidated ] = useState(false);
+    const navigate = useNavigate();
+
+    const isPasswordValid = () => {
+        const password = account.password;
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d){8,}$/;
+        return passwordRegex.test(password);
+    };
   
-    const handleSubmit = (e) => {
-      e.preventDefault();
+    const handleSubmit = async(e) => {
+        e.preventDefault();
+      try {
+        await signUp();
+        navigate('/signin');
+      } catch (error) {
+        const message = error.response && error.response.data ? error.response.data.error : error;
+        alert(message);
+      }
     };
 
     return (
@@ -24,16 +39,16 @@ export default function Signup() {
                 <label>Username</label>
             <Form.Control type="text" placeholder="Choose your username"/>
                 <label>Email</label>
-            <Form.Control type="text" placeholder="Enter your email"/>
+            <Form.Control type="text" placeholder="Enter your email" onChange={e => setAccount({...account, email: e.target.value})}/>
                 <label>Password</label>
-            <Form.Control type="text" placeholder="Choose your password"/>
+            <Form.Control type="text" placeholder="Choose your password" onChange={e => setAccount({...account, password: e.target.value})}/>
                 <div className="text-muted">
                 <label>Strong password has to include...</label>
                 <li>at least 8 characters</li>
                 <li>at least 1 capital letter</li>
                 <li>at least 1 number</li>
                 </div>
-            <Button>Create account</Button>
+            <Button type='submit'>Create account</Button>
             <div>
             <Link to="/signin">Already have an account? Sign in here!</Link>
             </div>
