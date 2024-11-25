@@ -14,6 +14,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import Signup from './screens/Signup_page.js';
 import Signin from './screens/Signin_page.js';
 import Group_page from './screens/Group_page.js';
+import Account from './screens/Account.js';
 
 // TODO: Add routes for different elements
 const router = createBrowserRouter([
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
   {
     path: '/group_page',
     element: <Group_page></Group_page>
+  },
+  {
+    path: '/account',
+    element: <Account></Account>
   }
 ]);
 
