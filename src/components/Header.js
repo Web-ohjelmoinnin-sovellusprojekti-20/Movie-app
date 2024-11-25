@@ -1,7 +1,7 @@
-import './Header.css';
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
+import { Container, Image, Nav, Navbar, NavDropdown } from 'react-bootstrap';
 import account_icon_placeholder from '../images/account_icon_placeholder.png';
-import { Navbar, Nav, NavDropdown, Container, Image } from 'react-bootstrap';
+import './Header.css';
 
 export default function Header() {
   return (

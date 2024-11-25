@@ -1,18 +1,42 @@
 import React, { useState } from 'react';
-import { Button, Container, Form, Image, Stack } from 'react-bootstrap';
+import { Button, Container, Form, Image, NavDropdown, Stack } from 'react-bootstrap';
 import account_icon_placeholder from '../images/account_icon_placeholder.png';
 import './Favorites.css';
+
 
 export default function Favorites() {
   const [favourites, setFavourites] = useState([])
   const [favouriteField, setFavouriteField] = useState({display: 'none'})
-  const [favouriteButton, setFavouriteButton] = useState(false)
+  const [isFavouriteButton, setIsFavouriteButton] = useState(false)
+
+  const [favourite, setFavourite] = useState({
+    email: '',
+    movie: '',
+    words: '',
+    dateTime: ''
+  })
+
+  const resetFavourites = () => {
+    setFavourite({
+      email: '',
+      movie: '',
+      words: '',
+      dateTime: ''
+    })
+  }
+
+  const handleChange = (field, value) => {
+    setFavourite((previousFavourite) => ({
+      ...previousFavourite,
+      [field] : value
+    }))
+  }
 
   const getDate = () => {
     const date = new Date()
 
     const day = date.getDate()
-    const month = date.getMonth()
+    const month = date.getMonth() + 1
     const year = date.getFullYear()
 
     const currentDate = (day + '.' + month + '.' + year)
@@ -22,35 +46,36 @@ export default function Favorites() {
 
   const handleFavouriteButton = () => {
     setFavouriteField({ display: 'block'})
-    setFavouriteButton(true)
+    setIsFavouriteButton(true)
   }
 
   const handleAddFavourite = (e) => {
     e.preventDefault()
     const date = getDate()
 
-    const favourite = {
+    const newFavourite = {
       ...favourite,
       dateTime: date
     }
 
-    setFavourites(favourite)
-    //jatka myöhemmi
+    setFavourite(favourite)
+    setFavourites((previousFavourite) => [...previousFavourite, newFavourite])
+    resetFavourites()
   }
 
   const handleCancelButton = () => {
     setFavouriteField({ display: 'none' })
-    setFavouriteButton(false)
-    //
+    setIsFavouriteButton(false)
+    resetFavourites()
   }
 
   return (
     <Container>
-      <div>
+      <div className="box1">
         <h6>Make sure you're signed in to add a favourite</h6>
         <Button
           variant="secondary"
-          disabled={favouriteButton}
+          disabled={isFavouriteButton}
           onClick={handleFavouriteButton}
         >
           Add a favourite
@@ -65,6 +90,8 @@ export default function Favorites() {
             <Form.Label>Email</Form.Label>
             <Form.Control
               placeholder="Enter email"
+              value={favourite.email}
+              onChange={(event) => handleChange('email', event.target.value)}
             >
             </Form.Control>
 
@@ -73,6 +100,9 @@ export default function Favorites() {
             <Form.Label>Movie</Form.Label>
             <Form.Control
               placeholder="Enter movie"
+              type="movie"
+              value={favourite.movie}
+              onChange={(event) => handleChange('movie', event.target.value)}
             >
             </Form.Control>
 
@@ -80,14 +110,20 @@ export default function Favorites() {
 
             <Form.Label>Thoughts</Form.Label>
             <Form.Control
-              placeholder="Give your thoughts about the movie"
+              placeholder="Share your thoughts about the movie"
+              type="text"
+              value={favourite.words}
+              onChange={(event) => handleChange('words', event.target.value)}
             >
             </Form.Control>
 
             <br/>
 
-            <div>
-              <Button variant="primary">
+            <div className="buttons">
+              <Button
+              variant="primary"
+              onClick={handleAddFavourite}
+              >
                 Add
               </Button>
 
@@ -104,27 +140,34 @@ export default function Favorites() {
         </Form>
       </div>
 
+      <br/>
+
       <div>
-        <Stack gap={2}>
+        <Stack className="box2" gap={1}>
           {
-            favourites.map(favourites => (
-              <div>
-              
+            favourites.map(Favourite => (
+              <div className="box3">
+
                 <div>
-                  <Image src={account_icon_placeholder} roundedCircle></Image>
-                  <span>{favourites}</span> //email
+                  <NavDropdown title={<Image src={account_icon_placeholder}></Image>} id="basic-nav-dropdown">
+                    <NavDropdown.Item href="/account">View account</NavDropdown.Item>
+                  </NavDropdown>
                 </div>
 
-                <div> //date
-                  {favourites}
+                <div>
+                <strong>{Favourite['email']}</strong>
+                </div>
+            
+                <div>
+                  <strong>{Favourite['dateTime']}</strong>
                 </div>
 
-                <div> //movie
-                  {favourites}
+                <div>
+                  <strong>{Favourite['movie']}</strong>
                 </div>
 
-                <div> //short words
-                  {favourites}
+                <div>
+                  <strong>{Favourite['words']}</strong>
                 </div>
 
               </div>
