@@ -2,13 +2,14 @@ import './Movies.css';
 import React, { useCallback, useState } from 'react';
 import { Form, Card, Row, Col, Container } from 'react-bootstrap';
 import Dropdown from 'react-bootstrap/Dropdown'
+import Pagination from 'react-bootstrap/Pagination';
 import { getMovieByName } from '../components/movieAPI';
-//TODO: Ei elokuvia notifikaatio,
+//TODO: Ei elokuvia notifikaatio, sivut
 export default function Movies() {
 
   const [movie, setMovie] = useState('')
   const [result, setResult] = useState('')
-  const [moviesData, setmoviesData] = useState('')
+  const [moviesData, setmoviesData] = useState(null)
   const [selectedGenres, setSelectedGenres] = useState({})
 
   const genreMap = {
@@ -36,17 +37,33 @@ export default function Movies() {
 
   const searchHandle = async (e) => {
       e.preventDefault();
-      setResult("You searched for " + movie + ". Displaying results..")
+      if(movie == ''){
+        setResult("Give me something to work with bruh")
+        console.log({moviesData})
+        setmoviesData(null);
+      }
+      else{
+      setResult("You searched for " + movie + ".")
+      console.log({movie})
+      console.log({moviesData})
       const genreIds = Object.keys(selectedGenres).filter(genre => selectedGenres[genre]).map(genre => genreMap[genre])
 
       try {
         const data = await getMovieByName(movie, genreIds)
+        if(data != ''){
+        setResult("Displaying results for " + movie + "...")
         setmoviesData(data)
+        }
+        else{
+          setResult("No results found for " + movie + ".")
+          setmoviesData(null)
+        }
         console.log("testi");
       }
       catch(error){
         setmoviesData(null)
       };
+    }
 
   }
 
@@ -106,7 +123,7 @@ export default function Movies() {
           <Col lg={3} md={3} sm={6} xs={12}>
         <Card>
           <Card.Img src= {`https://image.tmdb.org/t/p/w500${movie.poster_path}`} fluid/>
-          <Card.Title>{movie.original_title}</Card.Title>
+          <Card.Title>{movie.title}</Card.Title>
           {JSON.stringify(movie,null,2)}
         </Card>
         </Col>
