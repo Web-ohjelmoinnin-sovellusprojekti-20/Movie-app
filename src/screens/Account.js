@@ -1,17 +1,21 @@
 import './Account.css';
 import React, { useEffect, useState, createContext, useContext } from 'react';
-import { Button, Container, Dropdown, Card, Form } from 'react-bootstrap';
+import { Button, Container, Dropdown, Card, Form, Modal } from 'react-bootstrap';
 import { useLocation, Link } from 'react-router-dom';
 import account_icon_placeholder from '../images/account_icon_placeholder.png';
 import { useNavigate } from 'react-router-dom';
+import { useAccount } from '../context/useAccount';
+import axios from 'axios';
 
 export default function Account() {
 
+    const { account } = useAccount();
     const [currentUsername, setCurrentUsername] = useState("Aku Ankka");
     const [tempUsername, setTempUsername] = useState("");
-    const [currentEmail] = useState("aku@ankka.com");
+    const [currentEmail] = useState(account.email);
     const [activeSection, setActiveSection] = useState(null);
     const [profilePicture] = useState(account_icon_placeholder);
+    const [deleteModalShow, setDeleteModalShow] = useState(false);
 
     const [groups] = useState([]);
     const navigate = useNavigate();
@@ -35,14 +39,6 @@ export default function Account() {
     const handlePasswordChange = () => {
         //password change logic
         setActiveSection(null);
-    };
-
-    const handleDeleteAccount = async () => {
-        if (window.confirm("Are you sure you want to delete your account? Warning: all your data will be lost and this action cannot be undone!")) {
-        //delete logic
-        } else {
-            return;
-        };
     };
 
     const handleGroupButtonClick = (group) => {
@@ -104,7 +100,8 @@ export default function Account() {
                             <div>
                                 <h3>Delete Account</h3>
                                 <p>Are you sure you want to delete your account? Warning: all your data will be lost and this action cannot be undone!</p>
-                                <button onClick={handleDeleteAccount} style={{color:"red"}}>Confirm</button>
+                                <button onClick={() => setDeleteModalShow(true)} style={{color:"red"}}>Confirm</button>
+                                <DeleteModal show={deleteModalShow} onHide={() => setDeleteModalShow(false)}></DeleteModal>
                                 <button onClick={handleCancel}>Cancel</button>
                             </div>
                         )}
@@ -172,4 +169,48 @@ export default function Account() {
             </div>
         </div>
     )
+}
+
+function DeleteModal(props) {
+    const [show, setShow] = useState(false);
+    const handleDelete = (e) => {
+        //delete account logic
+        e.preventDefault();
+        try {
+            axios.delete()
+        } catch (error) {
+
+        }
+        props.onHide();
+    };
+
+  return (
+    <Modal
+        {...props}
+        size='lg'
+        aria-labelledby='contained-modal-title-vcenter'
+        centered>
+            <Modal.Header>
+                <Modal.Title id='contained-modal-title-vcenter'>
+                    Delete Account
+                </Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <h6>Enter password to delete your account</h6>
+                <Form onSubmit={handleDelete}>
+                    <Form.Group className="mb-3" controlId="formBasicPassword">
+                        <Form.Control type="password" placeholder="Enter password" />
+                    </Form.Group>
+                </Form>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="danger" type='submit'>
+                    Delete
+                </Button>
+                <Button variant="secondary" onClick={props.onHide}>
+                    Close
+                </Button>
+            </Modal.Footer>
+    </Modal>
+  )
 }

@@ -81,7 +81,7 @@ const deleteAccount = async (request,response,next) => {
         const account = accountFromDb.rows[0];
         if (!await compare(password,account.password)) return next(new ApiError('Invalid password for deletion',401));
 
-        //await deleteAccountByEmail(email);
+        await deleteAccountByEmail(email);
 
         return response.status(200).json({email: email});
     } catch (error) {

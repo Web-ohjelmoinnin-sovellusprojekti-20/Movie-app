@@ -3,6 +3,7 @@ import { before } from "mocha";
 import { initializeTestDatabase, insertTestAccount, getToken } from "./helpers/test.js";
 
 const base_url = 'http://localhost:3001';
+let token;
 
 describe('GET accounts', () => {
     before(() => {
@@ -81,6 +82,7 @@ describe('POST login', () => {
         expect(response.status).to.equal(200);
         expect(data).to.be.an('object');
         expect(data).to.include.all.keys('email','token');
+        token = data.token;
     });
 
     it('should not login successfully with wrong email', async() => {
@@ -111,5 +113,27 @@ describe('POST login', () => {
         expect(response.status).to.equal(401);
         expect(data).to.be.an('object');
         expect(data).to.include.all.keys('error');
+    });
+});
+
+describe('DELETE account', () => {
+    const email = 'test@example.com';
+    const password = 'Te5tpassword';
+    before(async () => {
+        token = await getToken(email);
+    });
+    it('should delete the account with the correct token', async() => {
+        const response = await fetch(base_url + '/account/delete', {
+            method: 'delete',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ 'email': email, 'password': password })
+        });
+        const data = await response.json();
+        expect(response.status).to.equal(200);
+        expect(data).to.be.an('object');
+        expect(data).to.include.all.keys('email');
     });
 });

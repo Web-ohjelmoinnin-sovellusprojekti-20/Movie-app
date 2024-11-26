@@ -17,7 +17,7 @@ const insertTestAccount = (email, password) => {
 };
 // Make a function for retrieving the jsonwebtoken
 const getToken = (email) => {
-    return jwt.sign({account: email}, process.env.JWT_SECRET_KEY);
+    return jwt.sign({email: email}, process.env.JWT_SECRET_KEY);
 };
 
 export { initializeTestDatabase, insertTestAccount, getToken };
