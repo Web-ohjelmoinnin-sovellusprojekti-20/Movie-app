@@ -9,6 +9,7 @@
     "axios": "^1.7.7",
     "bootstrap": "^5.3.3",
     "buffer": "^6.0.3",
+    "dotenv": "^16.4.5",
     "icons": "^1.0.0",
     "react": "^18.3.1",
     "react-bootstrap": "^2.10.5",
@@ -16,8 +17,7 @@
     "react-router-dom": "^6.28.0",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4",
-    "xml-js": "^1.6.11",
-    "xml2js": "^0.6.2"
+    "xml-js": "^1.6.11"
   },
   "scripts": {
     "start": "react-scripts start",

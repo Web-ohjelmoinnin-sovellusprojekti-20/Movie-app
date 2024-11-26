@@ -46,6 +46,7 @@ const postAccountRegistration = async (request, response, next) => {
 
 const postAccountLogin = async (request, response, next) => {
     const invalid_credentials_message = 'Invalid credentials.';
+    console.log('User trying to login...');
     try {
         const email = request.body.email;
         const password = request.body.password;
@@ -80,7 +81,7 @@ const deleteAccount = async (request,response,next) => {
         const account = accountFromDb.rows[0];
         if (!await compare(password,account.password)) return next(new ApiError('Invalid password for deletion',401));
 
-        await deleteAccountByEmail(email);
+        //await deleteAccountByEmail(email);
 
         return response.status(200).json({email: email});
     } catch (error) {

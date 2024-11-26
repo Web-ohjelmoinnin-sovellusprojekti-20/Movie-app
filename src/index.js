@@ -15,9 +15,15 @@ import Signup from './screens/Signup_page.js';
 import Signin from './screens/Signin_page.js';
 import Group_page from './screens/Group_page.js';
 import Account from './screens/Account.js';
+import ErrorPage from './screens/ErrorPage.js';
+import ProtectedRoute from './components/ProtectedRoute.js';
+import AccountProvider from './context/AccountProvider.js';
 
 // TODO: Add routes for different elements
 const router = createBrowserRouter([
+  {
+    errorElement: <ErrorPage></ErrorPage>
+  },
   {
     path: '/',
     element: <Home></Home>
@@ -51,20 +57,27 @@ const router = createBrowserRouter([
     element: <Signin></Signin>
   },
   {
-    path: '/group_page',
-    element: <Group_page></Group_page>
-  },
-  {
-    path: '/account',
-    element: <Account></Account>
+    element: <ProtectedRoute></ProtectedRoute>,
+    children: [
+      {
+        path: '/account',
+        element: <Account></Account>
+      },
+      {
+        path: '/group_page',
+        element: <Group_page></Group_page>
+      },
+    ]
   }
 ]);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <Header />  {/* Add Header component here */}
-    <RouterProvider router={router}></RouterProvider>
+    <AccountProvider>
+      <Header />
+      <RouterProvider router={router}></RouterProvider>
+    </AccountProvider>
   </React.StrictMode>
 );
 

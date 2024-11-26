@@ -1,15 +1,25 @@
 import './Sign_in_up.css';
 import React, { useEffect, useState } from 'react';
 import { Button, Container, Form } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAccount } from '../context/useAccount.js';
 
 export default function Signin() {
 
-    const [] = useState([]);
-    const [] = useState('');
+    const { account, setAccount, signIn, setIsLoggedIn } = useAccount();
+    const navigate = useNavigate();
   
-    const handleSubmit = (e) => {
+    const handleSubmit = async(e) => {
       e.preventDefault();
+      try {
+        await signIn();
+        navigate('/');
+        setIsLoggedIn(true);
+      } catch (error) {
+        console.log(error);
+        const message = error.response && error.response.data ? error.response.data.error : error;
+        alert(message);
+      }
     };
 
     return (
@@ -21,13 +31,13 @@ export default function Signin() {
         <Form onSubmit={handleSubmit}>
             <Form.Group controlId="formBasicEmail" className="mb-0 me-2 flex-grow-1">
                 <label>Username or email</label>
-            <Form.Control type="text" placeholder="Enter your username or email"/>
+            <Form.Control type="text" placeholder="Enter your username or email" onChange={e => setAccount({...account,email: e.target.value})}/>
                 <label>Password</label>
-            <Form.Control type="text" placeholder="Enter your password"/>
+            <Form.Control type="text" placeholder="Enter your password" onChange={e => setAccount({...account, password: e.target.value})}/>
             <div>
             <Link to="/signup">Forgot your username or password? Click here</Link>
             </div>
-            <Button>Login</Button>
+            <Button type='submit'>Login</Button>
             <div>
             <Link to="/signup">Don't have an account? Sign up here!</Link>
             </div>

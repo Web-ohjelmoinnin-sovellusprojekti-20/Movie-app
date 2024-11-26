@@ -1,7 +1,7 @@
+import React, { useState } from 'react';
 import { Button, Container, Form, Image, Stack } from 'react-bootstrap';
 import account_icon_placeholder from '../images/account_icon_placeholder.png';
 import './Reviews.css';
-import React, { useEffect, useState } from 'react';
 
 export default function Reviews() {
   const [review, setReview] = useState({
