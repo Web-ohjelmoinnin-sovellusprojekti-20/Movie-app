@@ -115,8 +115,11 @@ export default function Movies() {
         </Dropdown.Menu>
       </Dropdown>
       </Form>
+
       <label>{result}</label>
+
       <Container>
+        <Pagination>
       <Row>
       {moviesData && (
         moviesData.map((movie) => (
@@ -130,6 +133,7 @@ export default function Movies() {
         ))
       )}
       </Row>
+      </Pagination>
       </Container>
     </div>
   );
