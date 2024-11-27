@@ -12,12 +12,12 @@ const initializeTestDatabase = () => {
 // Make a insert test account function
 const insertTestAccount = (email, password) => {
     hash(password, 10, (error, hashedPassword) => {
-        pool.query('insert into account (email, password) values ($1,$2) returning *' [email,hashedPassword]);
+        pool.query('insert into account (email, password) values ($1,$2) returning *',[email,hashedPassword]);
     });
 };
 // Make a function for retrieving the jsonwebtoken
 const getToken = (email) => {
-    return jwt.sign({email: email}, process.env.JWT_SECRET_KEY);
+    return jwt.sign({user: email}, process.env.JWT_SECRET_KEY);
 };
 
 export { initializeTestDatabase, insertTestAccount, getToken };
