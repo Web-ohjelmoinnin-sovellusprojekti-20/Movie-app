@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAccount } from '../context/useAccount';
 import axios from 'axios';
 
+const url = process.env.REACT_APP_API_URL;
 export default function Account() {
 
     const { account } = useAccount();
@@ -172,45 +173,64 @@ export default function Account() {
 }
 
 function DeleteModal(props) {
-    const [show, setShow] = useState(false);
-    const handleDelete = (e) => {
-        //delete account logic
-        e.preventDefault();
-        try {
-            axios.delete()
-        } catch (error) {
-
-        }
-        props.onHide();
+  const [show, setShow] = useState(false);
+  const { account, logOut } = useAccount();
+  const [passwordFromInput, setPasswordFromInput] = useState('');
+  const navigate = useNavigate();
+  const handleDelete = async (e) => {
+    e.preventDefault();
+    const payload = {
+        email: account.email,
+        password: passwordFromInput
     };
+    try {
+        await axios.delete(url + '/account/delete', {
+            headers: { Authorization: account.token },
+            data: payload
+        }).then((response) => {
+            logOut();
+            navigate('/');
+        }).catch((error) => {
+            alert(error);
+        });
+    } catch (error) {
+        alert(error);
+    }
+    props.onHide();
+};
 
   return (
     <Modal
-        {...props}
-        size='lg'
-        aria-labelledby='contained-modal-title-vcenter'
-        centered>
-            <Modal.Header>
-                <Modal.Title id='contained-modal-title-vcenter'>
-                    Delete Account
-                </Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <h6>Enter password to delete your account</h6>
-                <Form onSubmit={handleDelete}>
-                    <Form.Group className="mb-3" controlId="formBasicPassword">
-                        <Form.Control type="password" placeholder="Enter password" />
-                    </Form.Group>
-                </Form>
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="danger" type='submit'>
-                    Delete
-                </Button>
-                <Button variant="secondary" onClick={props.onHide}>
-                    Close
-                </Button>
-            </Modal.Footer>
+      {...props}
+      size='lg'
+      aria-labelledby='contained-modal-title-vcenter'
+      centered
+    >
+      <Modal.Header>
+        <Modal.Title id='contained-modal-title-vcenter'>
+          Delete Account
+        </Modal.Title>
+      </Modal.Header>
+      <Form onSubmit={handleDelete}>
+        <Modal.Body>
+          <h6>Enter password to delete your account</h6>
+          <Form.Group className='mb-3' controlId='formBasicPassword'>
+            <Form.Control
+              type='password'
+              placeholder='Enter password'
+              onChange={(e) => setPasswordFromInput(e.target.value)}
+            />
+          </Form.Group>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant='danger' type='submit'>
+            Delete
+          </Button>
+          <Button variant='secondary' onClick={props.onHide}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Form>
     </Modal>
-  )
+  );
 }

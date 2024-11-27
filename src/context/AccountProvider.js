@@ -41,14 +41,11 @@ export default function AccountProvider({children}) {
     };
 
     const logOut = () =>{
-        sessionStorage.removeItem('account');
+        sessionStorage.clear();
         setAccount({email: '', password: ''});
-        sessionStorage.removeItem('isLoggedIn');
+        setIsLoggedIn(false);
     };
 
-    const deleteAccount = async() => {
-        const json = JSON.stringify(account)
-    };
   return (
     <AccountContext.Provider value={{account,setAccount,signUp,signIn,logOut,isLoggedIn,setIsLoggedIn}}>
         { children }
