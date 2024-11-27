@@ -2,7 +2,7 @@ import { ApiError } from '../helpers/ApiError.js';
 import { compare, hash } from 'bcrypt';
 import pkg from 'jsonwebtoken';
 import { contains_capital_letter_and_a_number } from '../helpers/utils.js';
-import { insertAccount, selectAccountByEmail } from '../models/Account.js';
+import { insertAccount, selectAccountByEmail, deleteAccountByEmail } from '../models/Account.js';
 import { request, response } from 'express';
 
 const { sign } = pkg;
@@ -73,15 +73,16 @@ const accountLogOut = async (request, response, next) => {
 
 const deleteAccount = async (request,response,next) => {
     try {
+        console.log('In deletion');
         const email = request.body.email;
         const password = request.body.password;
         if (!email || email.length === 0) return next(new ApiError('Invalid email for deletion',400));
         const accountFromDb = await selectAccountByEmail(email);
         if (accountFromDb.rowCount === 0) return next(new ApiError('Email not found',404));
         const account = accountFromDb.rows[0];
-        if (!await compare(password,account.password)) return next(new ApiError('Invalid password for deletion',401));
+        if (await compare(password,account.password) === false) return next(new ApiError('Invalid password for deletion',401));
 
-        //await deleteAccountByEmail(email);
+        await deleteAccountByEmail(email);
 
         return response.status(200).json({email: email});
     } catch (error) {
