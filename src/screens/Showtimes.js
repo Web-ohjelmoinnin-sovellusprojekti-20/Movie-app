@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import { Button, Card, Col, Container, Dropdown, Row } from 'react-bootstrap';
+import { Card, Col, Container, Dropdown, Row } from 'react-bootstrap';
 import { xml2js } from 'xml-js';
 import { getAll, getDate } from '../components/kinoAPI';
 import './Showtimes.css';
@@ -15,22 +15,20 @@ export default function ShowTimes() {
   const [showingData, setShowingData] = useState(null)
 
   const handleKinoData = async() => {
-    const selectedData = await getAll(theater, showingDate)
-    setShowingData(selectedData)
+    if (theater && showingDate) {
+      const selectedData = await getAll(theater, showingDate)
+      setShowingData(selectedData)
+      const selectedTheater = areas.find(area => area.id === theater)
+      setTheaterName(selectedTheater ? selectedTheater.name : "unknown")
+    }
   }
   const kinoTheaters = (xml) => {
     const xmlDoc = xml2js(xml, {compact: true})
     const theaters = xmlDoc.TheatreAreas.TheatreArea
-    const area = []
-
-    for (let i = 0; i < theaters.length; i++) {
-      area.push(
-        {
-          "name": theaters[i].Name._text,
-          "id": theaters[i].ID._text
-        }
-      )
-    }
+    const area = theaters.map((theater) => ({
+      name: theater.Name._text,
+      id: theater.ID._text
+    }))
     setAreas(area)
   }
 
@@ -43,12 +41,19 @@ export default function ShowTimes() {
       })
   }, [])
 
+  useEffect(() => {
+    if (theater && showingDate) {
+      handleKinoData()
+    }
+  }, [theater, showingDate])
+
   return (
     <div>
+      <h2>Select theater and date, search is automatic</h2>
       <div className="dropdown-box">
         <Dropdown>
           <Dropdown.Toggle>
-            Select theater
+            {theaterName || "Select theater"}
           </Dropdown.Toggle>
           <Dropdown.Menu>
             {areas.map((area, index) => (
@@ -62,7 +67,7 @@ export default function ShowTimes() {
 
         <Dropdown>
           <Dropdown.Toggle>
-            Select date
+            {showingDate || "Select date"}
           </Dropdown.Toggle>
           <Dropdown.Menu>
             {getDate().map((date, index) => (
@@ -72,10 +77,6 @@ export default function ShowTimes() {
             ))}
           </Dropdown.Menu>
         </Dropdown>
-
-        <Button variant="secondary" onClick={() => {
-          handleKinoData()
-        }}>Search showings</Button>
     </div>
       <div>
         <Container>

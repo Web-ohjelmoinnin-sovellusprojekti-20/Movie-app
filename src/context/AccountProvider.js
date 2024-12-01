@@ -25,7 +25,7 @@ export default function AccountProvider({children}) {
         } catch (error) {
             throw error;
         }
-    }
+    };
 
     const signIn = async () => {
         const json = JSON.stringify(account);
@@ -38,13 +38,14 @@ export default function AccountProvider({children}) {
             setAccount({email: '', password: ''});
             throw error;
         }
-    }
+    };
 
     const logOut = () =>{
-        sessionStorage.removeItem('account');
+        sessionStorage.clear();
         setAccount({email: '', password: ''});
-        sessionStorage.removeItem('isLoggedIn');
-    }
+        setIsLoggedIn(false);
+    };
+
   return (
     <AccountContext.Provider value={{account,setAccount,signUp,signIn,logOut,isLoggedIn,setIsLoggedIn}}>
         { children }
