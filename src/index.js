@@ -67,6 +67,10 @@ const router = createBrowserRouter([
         path: '/group_page',
         element: <Group_page></Group_page>
       },
+      {
+        path: '/myfavorites',
+        element: <Account></Account>
+      }
     ]
   }
 ]);
