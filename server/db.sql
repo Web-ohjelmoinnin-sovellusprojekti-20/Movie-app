@@ -30,20 +30,21 @@ create table favorite (
 );
 
 create table my_groups (
+    id serial primary key,
     owner_email varchar(255) not null,
     group_name varchar(255) not null,
-    movie_name varchar(255)[] not null,
+    movie_name varchar(255)[],
     showtime JSONB[],
-	constraint "PK_my_groups_owner_email" primary key (owner_email),
 	constraint "FK_my_groups_owner_email" foreign key (owner_email)
 	references account (email) on delete cascade
 );
 
 CREATE TABLE group_members (
-    group_owner_email VARCHAR(255) NOT NULL,
+    group_id INT not null,
     member_email VARCHAR(255) NOT NULL,
-    CONSTRAINT "FK_group_members_group_owner_email" FOREIGN KEY (group_owner_email)
-    REFERENCES my_groups(owner_email) on delete cascade,
+    CONSTRAINT "FK_group_members_group_id" FOREIGN KEY (group_id)
+    REFERENCES my_groups(id) on delete cascade,
     CONSTRAINT "FK_group_members_member_email" FOREIGN KEY (member_email)
-    REFERENCES account(email) on delete cascade
+    REFERENCES account(email) on delete cascade,
+    primary key (group_id, member_email)
 );

@@ -9,7 +9,7 @@ export default function Account() {
 
     const [currentUsername, setCurrentUsername] = useState("Aku Ankka");
     const [tempUsername, setTempUsername] = useState("");
-    const [currentEmail] = useState("aku@ankka.com");
+    const [currentEmail] = useState("aku@ankka");
     const [activeSection, setActiveSection] = useState(null);
     const [profilePicture] = useState(account_icon_placeholder);
 
