@@ -1,7 +1,7 @@
-import express, { response } from 'express';
 import cors from 'cors';
-import { pool } from './helpers/db.js';
+import express from 'express';
 import accountRouter from './routes/AccountRouter.js';
+import favouritesRouter from './routes/FavouritesRouter.js';
 import groupRouter from './routes/GroupRouter.js';
 
 const port = 3001;
@@ -19,5 +19,8 @@ app.use((error,request,response,next) => {
     const statusCode = error.statusCode || 500;
     response.status(statusCode).json({error: error.message});
 });
+
+//favourites
+app.use('/favourites', favouritesRouter)
 
 app.listen(port);

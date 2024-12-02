@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import { Accordion, Button, Image } from 'react-bootstrap';
 import account_icon_placeholder from '../images/account_icon_placeholder.png';
 import './Favorites.css';
@@ -7,7 +8,24 @@ export default function Favorites() {
   
   const [favouriteData, setFavouriteData] = useState([])
 
-  const addUser = (email, movies) => { //lisää lista, ei lisää duplikaatti email listoja
+  useEffect(() => {
+    const getFavouriteMovies = async() => {
+      try {
+        const response = await axios.get('http://localhost:3001/favourites/favourites')
+        const data = response.data
+
+        data.forEach(({ email, movie_name }) => {
+          //addUser(email, [])
+          addMovieToUser(email, Array.isArray(movie_name) ? movie_name : [movie_name])
+        })
+      } catch (error) {
+        throw error
+      }
+    }
+    getFavouriteMovies()
+  }, [])
+
+ /* const addUser = (email, movies) => { //lisää lista, ei lisää duplikaatti email listoja
     setFavouriteData((prevData) => {
       const userExists = prevData.some((user) => user.email === email)
 
@@ -23,7 +41,7 @@ export default function Favorites() {
         }
       ]
     })
-  }
+  } */
 
   const addMovieToUser = (email, movies) => { //lisää elokuva(t) tiettyyn listaan
     setFavouriteData((prevData) => {
@@ -55,11 +73,6 @@ export default function Favorites() {
 
     <div>
       <h1>Shared favourite movies</h1>
-      
-      <Button onClick={() => addUser('val.val@gmail.com')}>Add user without movies</Button>
-      <Button onClick={() => addUser('put.put@gmail.fi', ['Avatar', 'Titanic'])}>Add user with movies</Button>
-      <Button onClick={() => addMovieToUser('val.val@gmail.com', ['Terrifier'])}>Add movie to val's list</Button>
-      <Button onClick={() => addMovieToUser('put.put@gmail.fi', ['Monsters'])}>Add movie to put's list</Button>
       
       <Accordion>
         {favouriteData.map((favourite, index) => (
