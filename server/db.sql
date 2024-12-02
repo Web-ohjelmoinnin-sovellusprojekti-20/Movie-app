@@ -5,7 +5,7 @@ drop table if exists review;
 drop table if exists account;
 drop type if exists visibility;
 
-create type visibility as enum('HIDDEN,VISIBLE');
+create type visibility as enum('HIDDEN', 'VISIBLE');
 
 
 create table account (
