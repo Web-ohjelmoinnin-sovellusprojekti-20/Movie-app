@@ -3,6 +3,7 @@ import express from 'express';
 import accountRouter from './routes/AccountRouter.js';
 import favouritesRouter from './routes/FavouritesRouter.js';
 import groupRouter from './routes/GroupRouter.js';
+import reviewRouter from './routes/ReviewRouter.js';
 
 const port = 3001;
 
@@ -12,6 +13,8 @@ app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 
 app.use('/account',accountRouter);
+
+app.use('/review',reviewRouter);
 
 //groups
 app.use('/groups', groupRouter);
