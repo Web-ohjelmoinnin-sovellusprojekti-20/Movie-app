@@ -15,7 +15,6 @@ export default function Favorites() {
         const data = response.data
 
         data.forEach(({ email, movie_name }) => {
-          //addUser(email, [])
           addMovieToUser(email, Array.isArray(movie_name) ? movie_name : [movie_name])
         })
       } catch (error) {
@@ -25,58 +24,32 @@ export default function Favorites() {
     getFavouriteMovies()
   }, [])
 
- /* const addUser = (email, movies) => { //lisää lista, ei lisää duplikaatti email listoja
-    setFavouriteData((prevData) => {
-      const userExists = prevData.some((user) => user.email === email)
+const addMovieToUser = (email, movies) => {
+  setFavouriteData((prevData) => {
+    const existingUser = prevData.find(user => user.email === email);
 
-      if (userExists) {
-        return prevData
-      }
-      
-      return [
-        ...prevData,
-        {
-          email: email,
-          movie: movies || []
-        }
+    if (existingUser) {
+      const updatedMovies = [
+        ...new Set([...existingUser.movie, ...movies])
       ]
-    })
-  } */
 
-  const addMovieToUser = (email, movies) => { //lisää elokuva(t) tiettyyn listaan
-    setFavouriteData((prevData) => {
-      const userIndex = prevData.findIndex((user) => user.email === email)
-
-      if (userIndex !== -1) {
-        const updatedUser = {
-          ...prevData[userIndex],
-          movie: [...prevData[userIndex].movie, ...movies]
-        }
-        return [
-          ...prevData.slice(0, userIndex),
-          updatedUser,
-          ...prevData.slice(userIndex + 1)
-        ]
-      } else {
-        return [
-          ...prevData,
-          {
-            email: email,
-            movie: movies
-          }
-        ]
-      }
-    })
-  }
+      return prevData.map(user =>
+        user.email === email ? { ...user, movie: updatedMovies } : user
+      )
+    } else {
+      return [...prevData, { email, movie: movies }]
+    };
+  })
+}
 
   return (
 
     <div>
       <h1>Shared favourite movies</h1>
       
-      <Accordion>
+      <Accordion className="whole-box">
         {favouriteData.map((favourite, index) => (
-          <Accordion.Item eventKey={index.toString()} key={index}>
+          <Accordion.Item className="accordion-box" eventKey={index.toString()} key={index}>
             <Accordion.Header>
               <Image src={account_icon_placeholder} roundedCircle></Image>
               {favourite.email}'s list of favourite movies
