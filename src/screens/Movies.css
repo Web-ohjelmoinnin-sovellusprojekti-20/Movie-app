@@ -1,0 +1,25 @@
+.image-container {
+    position: relative;
+    display: inline-block;
+}
+
+.icons-overlay {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.icons-overlay i {
+    cursor: pointer;
+    color: aqua;
+}
+
+.icons-overlay .bi-star:hover {
+    color: gold;
+}
+
+.icons-overlay .bi-heart:hover {
+    color: tomato;
+}
