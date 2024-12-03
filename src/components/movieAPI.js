@@ -8,7 +8,7 @@ const key = '&api_key=e39b43c4f5b8bda212cacb543bd29bad'
 const getMovieByName = async (name, genreIds, Page) => {
     try {
         console.log(genreIds)
-        const response = await axios.get(url + name + '&language=en-US&page=1' + key )
+        const response = await axios.get(url + name + '&language=en-US&page=' + Page + key )
         let movies = response.data.results
         if (genreIds.length > 0) {
             movies = movies.filter(movie => {
