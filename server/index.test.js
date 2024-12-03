@@ -189,3 +189,22 @@ describe('DELETE account', () => {
         expect(data).to.include.all.keys('error');
     });
 });
+
+describe('POST create review', () => {
+    const email = 'test@example.com';
+
+    it('should create a new review', async() => {
+        const response = await fetch(base_url + '/review/create', {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: token
+            },
+            body: JSON.stringify({ 'email': email, 'review_text': 'This is a test', 'stars': Math.random(5), 'movie_name': 'Test movie' })
+        });
+        const data = await response.json();
+        expect(response.status).to.equal(201);
+        expect(data).to.be.an('object');
+        expect(data).to.include.all.keys('id');
+    });
+});

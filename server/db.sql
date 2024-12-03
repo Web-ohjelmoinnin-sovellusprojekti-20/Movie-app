@@ -18,7 +18,7 @@ create table review (
     email varchar(255) references account(email) on delete cascade,
     review_text varchar(255) not null,
     stars float not null,
-    movie_name varchar(255)[],
+    movie_name varchar(255),
     date timestamp not null
 );
 
