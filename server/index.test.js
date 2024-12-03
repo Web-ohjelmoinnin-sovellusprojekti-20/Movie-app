@@ -190,6 +190,8 @@ describe('DELETE account', () => {
     });
 });
 
+
+let reviewID;
 describe('POST create review', () => {
     const email = 'test@example.com';
 
@@ -205,6 +207,23 @@ describe('POST create review', () => {
         const data = await response.json();
         expect(response.status).to.equal(201);
         expect(data).to.be.an('object');
-        expect(data).to.include.all.keys('id');
+        expect(data).to.include.all.keys('review_id');
+        reviewID = parseInt(data.review_id);
+    });
+});
+
+describe('DELETE destroy review', () => {
+    it('should delete a review by id', async() => {
+        const response = await fetch(base_url + '/review/delete/' + reviewID, {
+        method: 'delete',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: token
+        }
+        });
+        const data = await response.json();
+        expect(response.status).to.equal(200);
+        expect(data).to.be.an('object');
+        expect(data).to.include.all.keys('review_id');
     });
 });

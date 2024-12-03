@@ -11,4 +11,14 @@ const createReview = async(email, reviewText, stars, movieName) => {
     }
 }
 
-export { createReview };
+const deleteReview = async(reviewId) => {
+    try {
+        const result = await pool.query('delete from review where review_id = ($1) returning review_id', [reviewId]);
+        return result;
+    } catch (error) {
+        console.error('Error deleting review:', error);
+        throw new Error('Database error');
+    }
+};
+
+export { createReview, deleteReview };
