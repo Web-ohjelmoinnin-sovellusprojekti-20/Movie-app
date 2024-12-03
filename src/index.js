@@ -1,23 +1,23 @@
+import 'bootstrap/dist/css/bootstrap.min.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
-import Home from './screens/Home';
-import reportWebVitals from './reportWebVitals';
-import Header from './components/Header.js';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Movies from './screens/Movies.js';
-import Showtimes from './screens/Showtimes.js';
-import Favorites from './screens/Favorites.js';
-import Reviews from './screens/Reviews.js';
-import Groups from './screens/Groups.js';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import Signup from './screens/Signup_page.js';
-import Signin from './screens/Signin_page.js';
-import Group_page from './screens/Group_page.js';
-import Account from './screens/Account.js';
-import ErrorPage from './screens/ErrorPage.js';
+import Header from './components/Header.js';
 import ProtectedRoute from './components/ProtectedRoute.js';
 import AccountProvider from './context/AccountProvider.js';
+import './index.css';
+import reportWebVitals from './reportWebVitals';
+import Account from './screens/Account.js';
+import ErrorPage from './screens/ErrorPage.js';
+import Favorites from './screens/Favorites.js';
+import Group_page from './screens/Group_page.js';
+import Groups from './screens/Groups.js';
+import Home from './screens/Home';
+import Movies from './screens/Movies.js';
+import Reviews from './screens/Reviews.js';
+import Showtimes from './screens/Showtimes.js';
+import Signin from './screens/Signin_page.js';
+import Signup from './screens/Signup_page.js';
 
 // TODO: Add routes for different elements
 const router = createBrowserRouter([
