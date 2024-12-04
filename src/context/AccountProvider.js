@@ -6,7 +6,7 @@ const url = process.env.REACT_APP_API_URL;
 
 export default function AccountProvider({children}) {
     const accountFromSessionStorage = sessionStorage.getItem('account');
-    const [account, setAccount] = useState(accountFromSessionStorage ? JSON.parse(accountFromSessionStorage) : {email: '', password: ''});
+    const [account, setAccount] = useState(accountFromSessionStorage ? JSON.parse(accountFromSessionStorage) : {email: '', password: '', token: undefined});
     const [isLoggedIn, setIsLoggedIn] = useState(() => {
         const storedState = sessionStorage.getItem('isLoggedIn');
         return storedState === 'true';
@@ -35,7 +35,7 @@ export default function AccountProvider({children}) {
             const token = response.data.token;
             sessionStorage.setItem('account', JSON.stringify(response.data));
         } catch (error) {
-            setAccount({email: '', password: ''});
+            setAccount({email: '', password: '', token: undefined});
             throw error;
         }
     };
