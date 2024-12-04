@@ -1,16 +1,20 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button, Container, Form, Image, Stack } from 'react-bootstrap';
 import account_icon_placeholder from '../images/account_icon_placeholder.png';
 import './Reviews.css';
+import { useAccount } from '../context/useAccount.js';
+import axios from 'axios';
+import { render } from '@testing-library/react';
 
 export default function Reviews() {
+  const { isLoggedIn, account } = useAccount();
   const [review, setReview] = useState({
-    id: Math.floor(Math.random() * 1000000),
-    email: '',
-    'movie-name': '',
-    content: '',
-    rating: '0',
-    datetime: ''
+    id: undefined,
+    email: account.email ? account.email : undefined,
+    'movie_name': '',
+    review_text: '',
+    stars: '0',
+    date: ''
   });
   const [reviewFormVisibility, setReviewFormVisibility] = useState({
     display: 'none'
@@ -18,18 +22,59 @@ export default function Reviews() {
   const [reviewButtonDisabled, setReviewButtonDisabled] = useState(false);
   const [reviews, setReviews] = useState([]);
 
-  const getCurrentDate = () => {
-    const currentDate = new Date();
+  const fetchReviews = async () => {
+    const response = await axios.get(process.env.REACT_APP_API_URL + '/review/all');
+    console.log(response);
+    setReviews(response.data);
+  };
 
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October','November','December'];
-    const currentDay = currentDate.getDate();
-    const currentMonth = monthNames[currentDate.getMonth()];
-    const currentYear = currentDate.getFullYear();
+  const addReview = async () => {
+    const email = account.email;
+    const movieName = review['movie_name'];
+    const reviewText = review['review_text'];
+    const stars = review['stars'];
 
-    const currentDateString = currentDay + ' ' + currentMonth + ' ' + currentYear;
+    console.log(account.token);
 
-    return currentDateString;
-  }
+    if (!movieName || !reviewText || !stars) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    const review_to_add = {
+      email: email,
+      movie_name: movieName,
+      review_text: reviewText,
+      stars: stars
+    };
+
+    if (!email) {
+      alert('Please log in to add a review');
+      return;
+    }
+    try {
+      const response = await axios.post(
+        process.env.REACT_APP_API_URL + '/review/create',
+        review_to_add,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: account.token
+          }
+        }
+      );
+    } catch (error) {
+      console.error(error);
+      alert('Failed to add review. Please try again later.');
+    }
+  };
+
+
+  useEffect(() => {
+    fetchReviews();
+  }, [reviewFormVisibility]);
+
+  
 
   const handleReviewButtonPress = () => {
     setReviewFormVisibility({ display: 'block' });
@@ -45,12 +90,12 @@ export default function Reviews() {
 
   const resetReview = () => {
     setReview({
-      id: Math.floor(Math.random() * 1000000),
-      email: '',
-      'movie-name': '',
-      content: '',
-      rating: '0',
-      datetime: ''
+      id: undefined,
+      email: account.email ? account.email : undefined,
+      'movie_name': '',
+      review_text: '',
+      stars: '0',
+      date: ''
     });
   };
 
@@ -62,27 +107,23 @@ export default function Reviews() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const currentDate = getCurrentDate();
-    console.log(currentDate);
-    const updatedReview = {
-      ...review,
-      datetime: currentDate
-    };
-    console.log(updatedReview);
-    setReview(updatedReview);
-    setReviews((prevReviews) => [...prevReviews, updatedReview]);
+    addReview();
 
-    resetReview();
+    cancelReview();
   };
 
   return (
     <Container>
       <div className='review-addition-box container'>
-        <h6>Please sign in to leave a review</h6>
+        {isLoggedIn ? (
+          <h6>Leave a review</h6>
+        ) : (
+          <h6>Please sign in to leave a review</h6>
+        )}
         <Button
           variant='secondary'
           id='review-addition-button'
-          disabled={reviewButtonDisabled}
+          disabled={!isLoggedIn ? true : reviewButtonDisabled}
           onClick={handleReviewButtonPress}
         >
           Add a review
@@ -92,24 +133,14 @@ export default function Reviews() {
           style={reviewFormVisibility}
           onSubmit={handleSubmit}
         >
-          {/* The email part should be removed once the backend can handle user authurization */}
-          <Form.Group className='mb-3' controlId='reviewEmail'>
-            <Form.Label>Email</Form.Label>
-            <Form.Control
-              type='email'
-              placeholder='Enter your email'
-              value={review['email']}
-              onChange={(event) => handleChange('email', event.target.value)}
-            />
-          </Form.Group>
           <Form.Group className='mb-3' controlId='reviewMovieName'>
             <Form.Label>Movie Name</Form.Label>
             <Form.Control
               type='text'
               placeholder='Enter the movie name'
-              value={review['movie-name']}
+              value={review['movie_name']}
               onChange={(event) =>
-                handleChange('movie-name', event.target.value)
+                handleChange('movie_name', event.target.value)
               }
             />
           </Form.Group>
@@ -119,8 +150,8 @@ export default function Reviews() {
               as='textarea'
               rows={3}
               placeholder='Enter your review content'
-              value={review['content']}
-              onChange={(event) => handleChange('content', event.target.value)}
+              value={review['review_text']}
+              onChange={(event) => handleChange('review_text', event.target.value)}
             />
           </Form.Group>
           <Form.Group className='mb-3' controlId='reviewRating'>
@@ -129,8 +160,8 @@ export default function Reviews() {
               type='range'
               min='1'
               max='5'
-              value={review['rating']}
-              onChange={(event) => handleChange('rating', event.target.value)}
+              value={review['stars']}
+              onChange={(event) => handleChange('stars', event.target.value)}
             />
             <Form.Text className='text-muted'>
               Please select a rating between 1 and 5.
@@ -152,22 +183,22 @@ export default function Reviews() {
         <Stack className='review-list' gap={2}>
           {
             reviews.map(review => (
-              <div className='review'>
+              <div className='review' id={review['id']} key={review['id']}>
                 <div className='account-email'>
                   <Image src={account_icon_placeholder} roundedCircle />
                   <span>{review['email']}</span>
                 </div>
                 <div className='review-date'>
-                  {review['datetime']}
+                  {review['date']}
                 </div>
                 <div className='review-movie'>
-                  {review['movie-name']}
+                  {review['movie_name']}
                 </div>
                 <div className='review-content'>
-                  {review['content']}
+                  {review['review_text']}
                 </div>
                 <div className='review-rating'>
-                  {review['rating']}/5 Stars
+                  {review['stars']}/5 Stars
                 </div>
               </div>
             ))
