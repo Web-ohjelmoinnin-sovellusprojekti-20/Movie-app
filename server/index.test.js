@@ -202,13 +202,46 @@ describe('POST create review', () => {
                 'Content-Type': 'application/json',
                 Authorization: token
             },
-            body: JSON.stringify({ 'email': email, 'review_text': 'This is a test', 'stars': Math.random(5), 'movie_name': 'Test movie' })
+            body: JSON.stringify({ 'email': email, 'review_text': 'This is a test', 'stars': Math.floor(Math.random() * 5), 'movie_name': 'Test movie' })
         });
         const data = await response.json();
         expect(response.status).to.equal(201);
         expect(data).to.be.an('object');
         expect(data).to.include.all.keys('review_id');
         reviewID = parseInt(data.review_id);
+    });
+
+    it('should create a second review', async() => {
+        const response = await fetch(base_url + '/review/create', {
+            method: 'post',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: token
+            },
+            body: JSON.stringify({ 'email': email, 'review_text': 'This is a second test', 'stars': Math.floor(Math.random() * 5), 'movie_name': 'Test movie' })
+        });
+        const data = await response.json();
+        expect(response.status).to.equal(201);
+        expect(data).to.be.an('object');
+        expect(data).to.include.all.keys('review_id');
+    });
+});
+
+describe('GET get all reviews', () => {
+    it('should get all reviews', async() => {
+        const response = await fetch(base_url + '/review/all', {
+            method: 'get',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        const data = await response.json();
+        expect(response.status).to.equal(200);
+        const reviews = data;
+        expect(reviews).to.be.an('array').that.is.not.empty;
+        reviews.forEach(review => {
+            expect(review).to.include.all.keys('review_id', 'email','review_text','stars','movie_name');
+        });
     });
 });
 

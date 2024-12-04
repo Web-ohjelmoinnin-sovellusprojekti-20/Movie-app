@@ -1,6 +1,18 @@
 import { ApiError } from '../helpers/ApiError.js';
-import { createReview, deleteReview } from '../models/Review.js';
+import { createReview, deleteReview, getReviews } from '../models/Review.js';
 
+
+const fetchGetReviews = async(request, response, next) => {
+    try {
+        const reviewsFromDb = await getReviews();
+
+        const reviews = reviewsFromDb.rows;
+        return response.status(200).json(reviews);
+    } catch (error) {
+        console.error(error);
+        return next(new ApiError('Internal server error', 500));
+    }
+};
 
 const postAddReview = async(request, response, next) => {
     try {
@@ -13,6 +25,7 @@ const postAddReview = async(request, response, next) => {
         const reviewId = await review.review_id;
         return response.status(201).json({review_id: reviewId});
     } catch (error) {
+        console.error(error);
         return next(error);
     }
 };
@@ -24,7 +37,7 @@ const deleteRemoveReview = async(request, response, next) => {
         const reviewId = request.params.id;
         const result = await deleteReview(reviewId);
         console.log('Delete result:', result);
-        if (result.rowCount === 0) return next(new ApiError('Review not found', 404));
+        if (result.rowCount === 0 || !result) return next(new ApiError('Review not found', 404));
         return response.status(200).json({ review_id: reviewId });
     } catch (error) {
         console.error('Error in deleteRemoveReview:', error.message);
@@ -33,4 +46,4 @@ const deleteRemoveReview = async(request, response, next) => {
 };
 
 
-export { postAddReview, deleteRemoveReview };
+export { postAddReview, deleteRemoveReview, fetchGetReviews };
