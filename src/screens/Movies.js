@@ -67,7 +67,6 @@ useEffect(() => {
           const parsedData = JSON.parse(data)
           console.log(parsedData.total_pages)
           console.log(currentPage)
-          pageLimiter()
         if(parsedData != ''){
           setResult("Displaying results for " + movie + "...")
           setmoviesData(parsedData.movies)
@@ -122,26 +121,26 @@ useEffect(() => {
   }
 
   const pageLimiter = () => {
-    const maxPagesBefore = 5; 
-    const maxPagesAfter = 5;   
-    let startPage = Math.max(currentPage - maxPagesBefore, 1);
-    let endPage = Math.min(currentPage + maxPagesAfter, totalPages);
+    const maxPagesBefore = 5
+    const maxPagesAfter = 5   
+    let startPage = Math.max(currentPage - maxPagesBefore, 1)
+    let endPage = Math.min(currentPage + maxPagesAfter, totalPages)
   
     if (currentPage - startPage < maxPagesBefore) {
-      endPage = Math.min(endPage + (maxPagesBefore - (currentPage - startPage)), totalPages);
+      endPage = Math.min(endPage + (maxPagesBefore - (currentPage - startPage)), totalPages)
     }
   
     if (endPage - currentPage < maxPagesAfter) {
-      startPage = Math.max(startPage - (maxPagesAfter - (endPage - currentPage)), 1);
+      startPage = Math.max(startPage - (maxPagesAfter - (endPage - currentPage)), 1)
     }
   
-    const limitedPages = [];
+    const limitedPages = []
     for (let i = startPage; i <= endPage; i++) {
-      limitedPages.push(i);
+      limitedPages.push(i)
     }
   
-    return limitedPages;
-  };
+    return limitedPages
+  }
 
   return (
     <div>Movies
