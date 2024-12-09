@@ -75,7 +75,7 @@ const addMovieToUser = (email, movies) => {
                     <Navbar.Collapse>
                       <Nav>
                         <NavDropdown>
-                          <NavDropdown.Item href="/account">View account</NavDropdown.Item>
+                          <NavDropdown.Item href={`/account/${encodeURIComponent(favourite.email)}`}>View account</NavDropdown.Item>
                         </NavDropdown>
                       </Nav>
                     </Navbar.Collapse>
@@ -87,11 +87,13 @@ const addMovieToUser = (email, movies) => {
         </Accordion>
       )}
 
-      <PaginationComp
-        total={Math.ceil(favouriteData.length / itemsPerPage)}
-        current={page}
-        onChange={(newPage) => setPage(newPage)}
-      />
+      <div className="pagination">
+        <PaginationComp
+          total={Math.ceil(favouriteData.length / itemsPerPage)}
+          current={page}
+          onChange={(newPage) => setPage(newPage)}
+        />
+      </div>
     </div>
   )
 }

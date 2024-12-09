@@ -3,7 +3,11 @@ import { pool } from '../helpers/db.js';
 
 const getFavourites = async(req, res) => {
     try {
-        const query = 'SELECT email, UNNEST(movie_name) AS movie_name FROM favorite'
+        const query = `
+            SELECT email, UNNEST(movie_name) AS movie_name
+            FROM favorite
+            WHERE current_visibility = 'VISIBLE';
+        `
         const result = await pool.query(query)
         res.status(200).json(result.rows)
         console.log(query, result.rows)
