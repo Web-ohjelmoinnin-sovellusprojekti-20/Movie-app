@@ -6,6 +6,11 @@ h1 {
     padding-left: 35px;
 }
 
+.navBox {
+    width: 5%;
+    height: 10px;
+}
+
 .whole-box {
     display: flex;
     flex-direction: column;
