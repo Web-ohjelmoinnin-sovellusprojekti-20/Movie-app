@@ -1,7 +1,9 @@
 import './Group_page.css';
 import React, { useEffect, useState, createContext, useContext } from 'react';
 import { Button, Container, Dropdown, Card } from 'react-bootstrap';
-import { useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
+import { useAccount } from '../context/useAccount.js';
 
 const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
     <i
@@ -22,26 +24,89 @@ const UserRoleContext = createContext();
 export default function Group_page() {
 
     const [members, setMembers] = useState([]);
+    const navigate = useNavigate();
     const location = useLocation();
-    const { groupName } = location.state || {};
-    const [role, setRole] = useState("member");
+    const { groupId, groupName, owner_email } = location.state || {};
+    const [role, setRole] = useState("");
+    const { account } = useAccount();
+    const [loading, setLoading] = useState(true);
+
+    console.log('Group ID:', groupId, 'Group Name:', groupName, 'Owner Email:', owner_email);
+    console.log('Account Email:', account?.email);
 
     useEffect(() => {
-        if (groupName) {
-            setMembers(["Aku", "Tupu", "Hupu", "Lupu"]);
-        }
+        const fetchGroupMembers = async () => {
+            setLoading(true);
+            try {
+                if (account && owner_email) {
+                    if (account.email === owner_email) {
+                        setRole("Owner");
+                        console.log("Owner");
+                    } else {
+                        setRole("Member");
+                        console.log("Member");
+                    }
+                }
 
-        if (groupName === "Owner") {
-            setRole("Owner");
+                if (groupId) {
+                        const response = await axios.get(`http://localhost:3001/groups/${groupId}/members`);
+                        setMembers(response.data);
+                        console.log(response.data);
+                } else {
+                    console.log('No group ID available');
+                }
+            } catch (error) {
+                console.error("Error fetching group members", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchGroupMembers();
+        console.log(role);
+    }, [groupId, owner_email, account?.email]);
+
+    if (loading) {
+        return <div>Loading...</div>;
+    };
+
+    const handleOpenProfile = (memberName) => {
+        navigate("/account", { state: { memberName: memberName } });
+    };
+
+    const handleDeleteGroup = async () => {
+        console.log('Requesting delete for group ID:', groupId);
+        if (window.confirm('Are you sure you want to delete?')) {
+            try {
+                await axios.delete(`http://localhost:3001/groups/${groupId}`);
+                alert('Group deleted successfully');
+                navigate('/groups');
+            } catch (error) {
+                console.error('Error deleting group', error);
+                alert('Failed to delete group');
+            }
         }
-    }, [groupName]);
+    };
+
+    const handleLeaveGroup = async () => {
+        if (window.confirm('Are you sure you want to leave?')) {
+            try {
+                await axios.delete(`http://localhost:3001/groups/${groupId}/members/${account.email}`);
+                alert('You left the group');
+                navigate('/groups');
+            } catch (error) {
+                console.error('Error leaving group', error);
+                alert('Failed to leave group');
+            }
+        }
+    };
 
     return (
-        <UserRoleContext.Provider value={role}>
+        <UserRoleContext.Provider value={{ role, handleOpenProfile, handleDeleteGroup, handleLeaveGroup }}>
             <div className="page-container">
                 <Container>
                     <div className="header-container">
-                        <h1>Welcome to {groupName}!</h1>
+                        <h1>Welcome to {groupName || "Loading group..."}</h1>
                         <div className="alert alert-info" role="alert">
                             This is a notification board.
                         </div>
@@ -68,40 +133,32 @@ export default function Group_page() {
             </div>
         </UserRoleContext.Provider>
     );
-}
+};
 
 function MemberList({ members }) {
-    const role = useContext(UserRoleContext);
-
-    const handleMemberClick = (member) => {
-        // opens account
-    };
+    const { role, handleOpenProfile } = useContext(UserRoleContext);
 
     return (
         <div>
-            <h6>
-                All current members:
-            </h6>
-            {members.map((member, index) => (
-                <div className="list-group w-100">
+            <h6>All current members:</h6>
+            {members.map(members => (
+                <div className="list-group w-100" key={members.id}>
                     <Button
                         className="d-flex align-items-center w-100 list-group-item"
                         variant="primary"
-                        key={index}
-                        onClick={() => handleMemberClick(member)}
                     >
-                        {member}
+                        {members.member_email}
                         <Dropdown className="ms-auto">
                         <Dropdown.Toggle as={CustomToggle}></Dropdown.Toggle>
                         <Dropdown.Menu>
                             {role === "Owner" ? (
                                 <>
-                                <Dropdown.Item>Check profile</Dropdown.Item>
+                                <Dropdown.Item onClick={ () => handleOpenProfile(members)}>Check profile</Dropdown.Item>
                                 <Dropdown.Item>Remove from group</Dropdown.Item>
                                 </>
                             ) : (
                                 <>
-                                <Dropdown.Item>Check profile</Dropdown.Item>
+                                <Dropdown.Item onClick={ () => handleOpenProfile(members)}>Check profile</Dropdown.Item>
                                 </>
                             )}
                         </Dropdown.Menu>
@@ -111,24 +168,24 @@ function MemberList({ members }) {
             ))}
         </div>
     );
-}
+};
 
 function RoleBasedActions() {
-    const role = useContext(UserRoleContext);
+    const { role, handleDeleteGroup, handleLeaveGroup } = useContext(UserRoleContext);
 
     return (
         <div>
             {role === "Owner" ? (
                 <div>
                     <h6>Owner actions:</h6>
-                    <Button variant="danger">Delete Group</Button>
+                    <Button variant="danger" onClick={handleDeleteGroup}>Delete Group</Button>
                 </div>
             ) : (
                 <div>
                     <h6>Member actions:</h6>
-                    <Button variant="danger">Leave Group</Button>
+                    <Button variant="danger" onClick={handleLeaveGroup}>Leave Group</Button>
                 </div>
             )}
         </div>
     );
-}
+};
