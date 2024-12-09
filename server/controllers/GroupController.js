@@ -13,7 +13,7 @@ const fetchAllGroups = async (req, res) => {
 
         res.status(200).json(result.rows);
     } catch (err) {
-    console.error(err);
+    console.error('Error fetching groups:', err.message);
     res.status(500).json({ error: 'Failed to fetch groups' });
     }
 };
@@ -26,7 +26,7 @@ const createGroup = async (req, res) => {
     if (!owner_email || !group_name) {
         console.log('Missing fields');
         return res.status(400).json({ error: "Owner email and group name are required" });
-}
+    }
 
     try {
         const accountResult = await pool.query(
@@ -44,16 +44,16 @@ const createGroup = async (req, res) => {
         [owner_email, group_name]
         );
 
-        const groupId = groupResult.rows[0].id;
+        const group_id = groupResult.rows[0].id;
         const groupName = groupResult.rows[0].group_name;
 
         await pool.query(
             'INSERT INTO group_members (group_id, member_email) VALUES ($1, $2)',
-            [groupId, owner_email]
+            [group_id, owner_email]
         );
 
-        console.log("New Group created:", { id: groupId, group_name: groupName });
-        res.status(201).json({ id: groupId, group_name: groupName });
+        console.log("New Group created:", { id: group_id, group_name: groupName });
+        res.status(201).json({ id: group_id, group_name: groupName, owner_email: owner_email });
     } catch (err) {
         console.error('Error creating group:', err.message);
         res.status(500).json({ error: 'Failed to create group' });
@@ -63,21 +63,17 @@ const createGroup = async (req, res) => {
 //delete group
 const deleteGroup = async (req, res) => {
     const { groupId } = req.params;
+    console.log('Received request to delete group with:', req.params);
 
     try {
         const deleteResult = await pool.query(
-            'DELETE FROM my_groups WHERE id = $1 RETURNING *',
+            'DELETE FROM my_groups WHERE id = $1',
             [groupId]
         )
-
+        
         if (deleteResult.rowCount === 0) {
             return res.status(404).json({ error: 'Group not found' });
         }
-
-        await pool.query(
-            'DELETE FROM group_members WHERE group_owner_email = $1',
-            [groupId]
-        );
 
         res.status(200).json({ message: "Group deleted successfully" });
     } catch (err) {
@@ -89,24 +85,24 @@ const deleteGroup = async (req, res) => {
 
 //join group
 const joinGroup = async (req, res) => {
-    const { group_owner_email, member_email } = req.body;
+    const { group_id, member_email } = req.body;
 
-    if (!group_owner_email ||!member_email) {
+    if (!group_id ||!member_email) {
         return res.status(400).json({ error: "Group owner email and member email are required" });
     }
 
     try {
-        const checkQuery = 'SELECT 1 FROM group_members WHERE group_owner_email = $1 AND member_email = $2';
-        const checkResult = await pool.query(checkQuery, [group_owner_email, member_email]);
+        const checkQuery = 'SELECT 1 FROM group_members WHERE group_id = $1 AND member_email = $2';
+        const checkResult = await pool.query(checkQuery, [group_id, member_email]);
 
         if (checkResult.rowCount > 0) {
             return res.status(400).json({ error: "Member is already part of the group" });
         }
 
         const insertQuery =
-        `INSERT INTO group_members (group_owner_email, member_email) VALUES ($1, $2)`;
+        `INSERT INTO group_members (group_id, member_email) VALUES ($1, $2)`;
 
-        await pool.query(insertQuery, [group_owner_email, member_email]);
+        await pool.query(insertQuery, [group_id, member_email]);
 
         res.status(200).json({ message: "Member joined the group successfully" });
     } catch (err) {
@@ -117,12 +113,12 @@ const joinGroup = async (req, res) => {
 
 //remove member
 const removeMember = async (req, res) => {
-    const { groupId, memberId } = req.params;
+    const { groupId, member_email } = req.params;
 
     try {
         const removeResult = await pool.query(
-            'DELETE FROM group_members WHERE group_owner_email = $1 AND member_email = $2 RETURNING *',
-            [groupId, memberId]
+            'DELETE FROM group_members WHERE group_id = $1 AND member_email = $2 RETURNING *',
+            [groupId, member_email]
         );
 
         if (removeResult.rowCount === 0) {
@@ -136,5 +132,44 @@ const removeMember = async (req, res) => {
     }
 };
 
+//leave group
+const leaveGroup = async (req, res) => {
+    const { groupId, member_email } = req.params;
 
-export { fetchAllGroups, createGroup, deleteGroup, joinGroup, removeMember };
+    if (!groupId || !member_email) {
+        return res.status(400).json({ error: 'Group ID and member email are required' });
+    }
+
+    try {
+        const leaveResult = await pool.query(
+            'DELETE FROM group_members WHERE group_id = $1 AND member_email = $2 RETURNING *',
+            [groupId, member_email]
+        );
+
+        if (leaveResult.rowCount === 0) {
+            return res.status(404).json({ error: 'Member not found in the group' });
+        }
+
+        res.status(200).json({ message: "Member left the group successfully" });
+    } catch (err) {
+        console.error('Error leaving group:', err);
+        res.status(500).json({ error: 'Failed to leave group' });
+    }
+};
+
+//fetch group members
+const fetchAllMembers = async (req, res) => {
+    try {
+        const fetchQuery = 'SELECT member_email FROM group_members WHERE group_id = $1';
+
+        const result = await pool.query(fetchQuery, [req.params.groupId]);
+
+        res.status(200).json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch group members' });
+    }
+};
+
+
+export { fetchAllGroups, createGroup, deleteGroup, joinGroup, removeMember, leaveGroup, fetchAllMembers };
