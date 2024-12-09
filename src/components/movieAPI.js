@@ -8,8 +8,11 @@ const key = '&api_key=e39b43c4f5b8bda212cacb543bd29bad'
 const getMovieByName = async (name, genreIds, Page) => {
     try {
         console.log(genreIds)
+        console.log(Page)
         const response = await axios.get(url + name + '&language=en-US&page=' + Page + key )
         let movies = response.data.results
+        const totalPages = response.data.total_pages
+        console.log(totalPages)
         if (genreIds.length > 0) {
             movies = movies.filter(movie => {
                 const flatIds = movie.genre_ids.flat();
@@ -20,7 +23,7 @@ const getMovieByName = async (name, genreIds, Page) => {
             }
             );       
           }
-        return movies.sort((a,b) => b.popularity - a.popularity )
+        return JSON.stringify({movies: movies.sort((a,b) => b.popularity - a.popularity ),total_pages : totalPages})
     }
     catch(error){
         throw error
