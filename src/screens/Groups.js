@@ -3,12 +3,14 @@ import React, { useEffect, useState } from 'react';
 import { Button, Container, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
+import { useAccount } from '../context/useAccount.js';
 export default function Groups() {
 
   const [groups, setGroups] = useState([]);
   const [groupName, setGroupName] = useState('');
   const [iconStates, setIconStates] = useState([]);
   const navigate = useNavigate();
+  const {account} = useAccount();
 
   //fetch all groups
   useEffect(() => {
@@ -29,7 +31,6 @@ export default function Groups() {
   const handleCreateGroup = async (e) => {
     e.preventDefault();
 
-    const account = JSON.parse(sessionStorage.getItem('account'));
     const ownerEmail = account ? account.email : null;
 
     if (!ownerEmail) {
@@ -41,6 +42,7 @@ export default function Groups() {
       alert('Please enter a group name.');
       return;
     }
+    console.log(ownerEmail)
 
     try {
       console.log('Sending request with data:', { owner_email: ownerEmail, group_name: groupName });
@@ -52,7 +54,8 @@ export default function Groups() {
 
       setGroupName('');
 
-      setGroups((prevGroups) => [...prevGroups, response.data]);
+      console.log("response data lisäyksen jälkeen",response.data);
+      setGroups((prevGroups) => [...prevGroups, {...response.data, members: [ownerEmail]}]);
 
       setIconStates((prevStates) => [...prevStates, false]);
     } catch (err) {
@@ -62,7 +65,7 @@ export default function Groups() {
 
   // Handle joining a group
   const handleJoinGroup = async (groupOwnerEmail) => {
-    const memberEmail = localStorage.getItem('email'); // Replace with your auth logic
+    const memberEmail = localStorage.getItem('email');
 
     try {
       await axios.post('http://localhost:3001/groups/join', {
@@ -76,7 +79,8 @@ export default function Groups() {
   };
 
   const handleGroupClick = (group) => {
-    navigate("/group_page", { state: { groupName: group.group_name } });
+    console.log(group)
+    navigate("/group_page", { state: { groupId: group.id, groupName: group.group_name, owner_email: group.owner_email } });
   };
 
   const handleIconClick = (index, e) => {

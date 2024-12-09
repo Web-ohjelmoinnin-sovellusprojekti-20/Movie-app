@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { fetchAllGroups, createGroup, deleteGroup, joinGroup, removeMember } from '../controllers/GroupController.js';
+import { fetchAllGroups, createGroup, deleteGroup, joinGroup, removeMember, leaveGroup, fetchAllMembers } from '../controllers/GroupController.js';
 
 const router = new Router();
 
@@ -16,6 +16,12 @@ router.delete('/:groupId', deleteGroup);
 router.post('/:groupId/join', joinGroup);
 
 //remove member
-router.delete('/:groupId/members/:memberId', removeMember);
+router.delete('/:groupId/members/:member_email', removeMember);
+
+//leave group
+router.delete('/:groupId/members/:member_email', leaveGroup);
+
+//fetch group members
+router.get('/:groupId/members', fetchAllMembers);
 
 export default router;
