@@ -1,5 +1,5 @@
 import './Movies.css';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Form, Card, Row, Col, Container, Button } from 'react-bootstrap';
 import Dropdown from 'react-bootstrap/Dropdown'
 import Pagination from 'react-bootstrap/Pagination';
@@ -18,6 +18,12 @@ export default function Movies() {
   const [actionIcons, setActionIcons] = useState ({})
   const [currentPage, setCurrentPage] = useState (1)
   const [totalPages, setTotalPages] = useState (1)
+
+useEffect(() => {
+  if (currentPage >= 1 && currentPage <= totalPages) {
+    searchHandle(new Event('submit'));
+  }
+}, [currentPage]); 
 
   const genreMap = {
     'Action': 28,
@@ -58,10 +64,15 @@ export default function Movies() {
 
       try {
           const data = await getMovieByName(movie, genreIds, currentPage)
-        if(data != ''){
+          const parsedData = JSON.parse(data)
+          console.log(parsedData.total_pages)
+          console.log(currentPage)
+          pageLimiter()
+        if(parsedData != ''){
           setResult("Displaying results for " + movie + "...")
-          setmoviesData(data)
-          setTotalPages(data.total_pages)
+          setmoviesData(parsedData.movies)
+          setTotalPages(parsedData.total_pages)
+
         }
         else{
           setResult("No results found for " + movie + ".")
@@ -101,11 +112,36 @@ export default function Movies() {
   }
 
   const handlePageChange = (newPage) => {
+    console.log("tuleva"+newPage)
+    console.log("nykynen"+currentPage)
+    console.log(totalPages)
       if (newPage >= 1 && newPage <= totalPages) {
         setCurrentPage(newPage)
-        searchHandle(new Event('submit'))
+        console.log(newPage)
       }
   }
+
+  const pageLimiter = () => {
+    const maxPagesBefore = 5; 
+    const maxPagesAfter = 5;   
+    let startPage = Math.max(currentPage - maxPagesBefore, 1);
+    let endPage = Math.min(currentPage + maxPagesAfter, totalPages);
+  
+    if (currentPage - startPage < maxPagesBefore) {
+      endPage = Math.min(endPage + (maxPagesBefore - (currentPage - startPage)), totalPages);
+    }
+  
+    if (endPage - currentPage < maxPagesAfter) {
+      startPage = Math.max(startPage - (maxPagesAfter - (endPage - currentPage)), 1);
+    }
+  
+    const limitedPages = [];
+    for (let i = startPage; i <= endPage; i++) {
+      limitedPages.push(i);
+    }
+  
+    return limitedPages;
+  };
 
   return (
     <div>Movies
@@ -175,12 +211,20 @@ export default function Movies() {
       </Row>
       </Container>    
       <Pagination className='pageList justify-content-center'>
-        <Pagination.First /> 
-        <Pagination.Prev /> 
-        <Pagination.Item>{1}</Pagination.Item>
-        <Pagination.Ellipsis />
-        <Pagination.Next />
-        <Pagination.Last />
+        <Pagination.First onClick={() => handlePageChange(1)}/> 
+        <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)}/> 
+        {pageLimiter().map((pageIndex) => (
+        <Pagination.Item
+          key={pageIndex}
+          active={pageIndex === currentPage}
+          onClick={() => handlePageChange(pageIndex)}
+        >
+          {pageIndex}
+        </Pagination.Item>
+        ))}
+        <Pagination.Next onClick={() => {handlePageChange(currentPage + 1); console.log("clicked" + currentPage)
+        }}/>
+        <Pagination.Last onClick={() => handlePageChange(totalPages)}/>
     </Pagination>
       <MovieCardModal
           show={modalShow}
@@ -198,10 +242,11 @@ function MovieCardModal (props)  {
   const {movie, genreMap} = props
   if (!movie) return null;
 
-  const reverseMap = Object.entries(genreMap).reduce((acc, [name, id]) => {
-    acc[id] = name;
-    return acc;
-  })
+  const reverseMap = {};
+  Object.keys(genreMap).forEach(genre => {
+    const genreId = genreMap[genre];
+    reverseMap[genreId] = genre;   
+  });
 
   const modalGenres = movie.genre_ids.map(id => reverseMap[id]).join(', ')
 
