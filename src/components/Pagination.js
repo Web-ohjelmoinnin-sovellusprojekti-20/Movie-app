@@ -4,9 +4,9 @@ export default function PaginationComp({total, current, onChange}) {
     
     let items = []
 
-    if (current > 1) {
+    /*if (current >= 1) {
         items.push(<Pagination.Prev key="prev" onClick={() => onChange(current - 1)}/>)
-    }
+    }*/
 
     for (let page = 1; page <= total; page++) {
         items.push(
@@ -16,9 +16,9 @@ export default function PaginationComp({total, current, onChange}) {
         )
     }
 
-    if (current < total) {
+    /*if (current <= total) {
         items.push(<Pagination.Next key="next" onClick={() => onChange(current + 1)}/>)
-    }
+    }*/
 
     return (
         <Pagination>{items}</Pagination>

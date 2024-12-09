@@ -4,3 +4,9 @@
     gap: 30px;
     margin-left: 20px;
 }
+
+.pagination {
+    position: absolute;
+    bottom: 150px;
+    left: 47.5%;
+}

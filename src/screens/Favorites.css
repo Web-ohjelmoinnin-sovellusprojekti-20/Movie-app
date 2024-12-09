@@ -23,3 +23,10 @@ h1 {
     border: 1px solid black;
     width: 50%;
 }
+
+.pagination {
+    position: absolute;
+    bottom: 200px;
+    left: 50%;
+    text-align: center;
+}

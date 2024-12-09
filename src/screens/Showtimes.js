@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, Col, Container, Dropdown, Row } from 'react-bootstrap';
 import { xml2js } from 'xml-js';
 import { getAll, getDate } from '../components/kinoAPI';
+import PaginationComp from '../components/Pagination.js';
 import './Showtimes.css';
 
 const base_url = 'https://www.finnkino.fi/xml/'
@@ -13,6 +14,12 @@ export default function ShowTimes() {
   const [theaterName, setTheaterName] = useState(null)
   const [showingDate, setShowingDate] = useState(null)
   const [showingData, setShowingData] = useState(null)
+  const [page, setPage] = useState(1)
+
+  const itemsPerPage = 4
+  const startIndex = (page - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedData = showingData ? showingData.slice(startIndex, endIndex) : []
 
   const handleKinoData = async() => {
     if (theater && showingDate) {
@@ -82,7 +89,7 @@ export default function ShowTimes() {
         <Container>
           {showingData && (
             <Row>
-              {showingData.map((movie, index) => (
+              {paginatedData.map((movie, index) => (
                 <Col lg={3} md={3} sm={6} xs={12} key={index}>
                   <Card>
                     <Card.Img src={movie.image} fluid></Card.Img>
@@ -117,6 +124,13 @@ export default function ShowTimes() {
               ))}
             </Row>
           )}
+          <div className="pagination">
+            <PaginationComp
+              total={showingData ? Math.ceil(showingData.length / itemsPerPage) : 0}
+              current={page}
+              onChange={(newPage) => setPage(newPage)}
+            />
+          </div>
         </Container>
       </div>
     </div>
