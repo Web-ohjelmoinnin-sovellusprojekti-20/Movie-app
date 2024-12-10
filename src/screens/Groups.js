@@ -63,7 +63,13 @@ export default function Groups() {
     }
   };
 
-  // Handle joining a group
+  //handle group joining and icon state
+  const handleClick = (index, e, groupOwnerEmail) => {
+    handleIconClick(index, e);
+    handleJoinGroup(groupOwnerEmail);
+  };
+
+  //handle joining a group
   const handleJoinGroup = async (groupOwnerEmail) => {
     const memberEmail = localStorage.getItem('email');
 
@@ -123,7 +129,7 @@ export default function Groups() {
             {group.group_name}
             <span
             variant="btn-primary" type="button" className="d-flex align-items-center ms-auto"
-            onClick={(e) => handleIconClick(index, e)}
+            onClick={(e) => handleClick(index, e)}
             >
               {iconStates[index] ? (
                 <i className="bi bi-person-fill-check"></i>
