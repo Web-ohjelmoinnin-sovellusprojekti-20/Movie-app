@@ -1,10 +1,9 @@
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Button, Container, Form, Image, Stack } from 'react-bootstrap';
+import { useAccount } from '../context/useAccount.js';
 import account_icon_placeholder from '../images/account_icon_placeholder.png';
 import './Reviews.css';
-import { useAccount } from '../context/useAccount.js';
-import axios from 'axios';
-import { render } from '@testing-library/react';
 
 export default function Reviews() {
   const { isLoggedIn, account } = useAccount();
