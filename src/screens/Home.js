@@ -4,7 +4,7 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import { getMovieByName } from '../components/movieAPI';
 import placeholderImage from '../images/placeholder-img.png';
 import './Home.css';
-export default function Movies() {
+export default function Home() {
 
   const [movie, setMovie] = useState('')
   const [moviesData, setmoviesData] = useState(null)
