@@ -1,6 +1,6 @@
 import { pool } from '../helpers/db.js';
 
-
+/*
 const initializeEmail = async(req, res) => {
     try {
         const { email } = req.body
@@ -14,7 +14,7 @@ const initializeEmail = async(req, res) => {
         res.status(500).json({error})
     }
 }
-
+*/
 const getFavourites = async(req, res) => {
     try {
         const query = `

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { appendList, getFavourites, initializeEmail, removeFromList } from '../controllers/FavouriteController.js';
+import { appendList, getFavourites, removeFromList } from '../controllers/FavouriteController.js';
 
 
 const router = new Router()
@@ -14,6 +14,6 @@ router.post('/append', appendList)
 router.delete('/remove', removeFromList)
 
 //initialize email in favorites table
-routes.post('/initialize', initializeEmail)
+//routes.post('/initialize', initializeEmail)
 
 export default router
