@@ -25,7 +25,8 @@ const getFavourites = async(req, res) => {
     }
 }
 
-const appendList = async(req, res, next) => {
+const appendList = async(req, res) => {
+    console.log("Hello?")
     try {
         const { email, movie_name } = req.body
         

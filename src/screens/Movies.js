@@ -6,7 +6,11 @@ import Pagination from 'react-bootstrap/Pagination';
 import Modal from 'react-bootstrap/Modal';
 import { getMovieByName } from '../components/movieAPI';
 import placeholderImage from '../images/placeholder-img.png';
-//TODO: Pagination
+import { useAccount } from '../context/useAccount.js'
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+//TODO: genre alignment, integrointi käyttäjän kanssa
+
 export default function Movies() {
 
   const [movie, setMovie] = useState('')
@@ -18,6 +22,9 @@ export default function Movies() {
   const [actionIcons, setActionIcons] = useState ({})
   const [currentPage, setCurrentPage] = useState (1)
   const [totalPages, setTotalPages] = useState (1)
+  const [showPages, setShowPages] = useState (false)
+  const {account} = useAccount();
+  const navigate = useNavigate();
 
 useEffect(() => {
   if (currentPage >= 1 && currentPage <= totalPages) {
@@ -55,6 +62,7 @@ useEffect(() => {
         console.log({moviesData})
         setmoviesData(null);
         setTotalPages(1)
+        setShowPages(false)
       }
       else{
         setResult("You searched for " + movie + ".")
@@ -71,12 +79,13 @@ useEffect(() => {
           setResult("Displaying results for " + movie + "...")
           setmoviesData(parsedData.movies)
           setTotalPages(parsedData.total_pages)
-
+          setShowPages(true)
         }
         else{
           setResult("No results found for " + movie + ".")
           setmoviesData(null)
           setTotalPages(1)
+          setShowPages(false)
         }
         console.log("testi");
       }
@@ -99,15 +108,51 @@ useEffect(() => {
         }))
       
   }, [])
-
-  const handleIconClick = (movieId, icon) => {
+// yhistät favouritesiin
+// Reviews lopulta vaa vie reviewsiin leffan nimen kanssa
+  const handleIconClick = async (movie, icon) => {
         setActionIcons((prevState) =>({
           ...prevState,
-          [movieId]: {
-          ...prevState[movieId],
-          [icon]: !prevState[movieId]?.[icon],
+          [movie.id]: {
+          ...prevState[movie.id],
+          [icon]: !prevState[movie.id]?.[icon],
         },
       }))
+
+      if (icon === 'heart' && account.email) {
+        console.log("sup. Movie the heart got clicked on: " + movie.id) 
+        if (actionIcons[movie.id]?.heart){
+          console.log("unchecked")
+        }
+        else{
+          console.log("checked")
+          try{
+            alert("Movie " + movie.title + " added to Favourites!")
+            const favResponse = await axios.post('http://localhost:3001/favourites/append', {
+              email : account.email,
+              movie_name : movie.title
+            })
+            console.log(favResponse)
+          }
+          catch (err) {
+            console.log("Error adding to favorites")
+          }
+        }
+      }
+      if (icon === 'star' && account.email) {
+        console.log("sup. Redirecting to the Reviews page with the movie " + movie.id)
+        if(actionIcons[movie.id]?.star){
+          console.log("star unchecked")
+        }
+        else{
+          console.log("star checked")
+          alert("Review...?")
+          navigate("/reviews")
+        }
+      }
+      if(!account.email) {
+        alert("Syö")
+      }
   }
 
   const handlePageChange = (newPage) => {
@@ -143,10 +188,12 @@ useEffect(() => {
   }
 
   return (
-    <div>Movies
+    <div>
+      <h3 className='pageTitle'><strong>Movies</strong></h3>
+      <div className="searchProperties">
       <Form onSubmit={searchHandle}>
-        <Form.Control type="text" placeholder='Type here...'
-          className="mt2"
+        <Form.Control type="text" placeholder='Type here to search for movies...'
+          className="searchBar"
           value = {movie}
           onChange={handleInputChange}
         /> 
@@ -154,6 +201,7 @@ useEffect(() => {
       <Form>
       <Dropdown title="Test"
           id="test-dpdown"
+          className="filterMenu"
         >
         <Dropdown.Toggle id="dropdown-basic"
           variant="secondary">
@@ -166,6 +214,7 @@ useEffect(() => {
             'TV Movie', 'Thriller', 'War', 'Western'
           ].map(genre => (
         <Form.Check 
+          className='checkBoxes'
           type='checkbox'
           key={genre}
           label={genre}
@@ -176,8 +225,9 @@ useEffect(() => {
         </Dropdown.Menu>
       </Dropdown>
       </Form>
+      </div>
 
-      <label>{result}</label>
+      <label className='searchResults'>{result}</label>
 
       <Container>
           <Row>
@@ -194,11 +244,11 @@ useEffect(() => {
             <div className='icons-overlay'>
             <i 
               className={`bi ${actionIcons[movie.id]?.star ? 'bi-star-fill' : 'bi-star'}`} 
-              onClick={(e) => {e.stopPropagation(); handleIconClick(movie.id,'star');}}
+              onClick={(e) => {e.stopPropagation(); handleIconClick(movie,'star');}}
             ></i>
             <i 
               className={`bi ${actionIcons[movie.id]?.heart ? 'bi-heart-fill' : 'bi-heart'}`}
-              onClick={(e) => {e.stopPropagation(); handleIconClick(movie.id,'heart');}}
+              onClick={(e) => {e.stopPropagation(); handleIconClick(movie,'heart');}}
             ></i>
           </div>
           <Card.Title className='movieTitle justify-content-center '>{movie.title}</Card.Title>
@@ -208,7 +258,8 @@ useEffect(() => {
         ))
       )}
       </Row>
-      </Container>    
+      </Container>  
+      {showPages && (  
       <Pagination className='pageList justify-content-center'>
         <Pagination.First onClick={() => handlePageChange(1)}/> 
         <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)}/> 
@@ -224,7 +275,8 @@ useEffect(() => {
         <Pagination.Next onClick={() => {handlePageChange(currentPage + 1); console.log("clicked" + currentPage)
         }}/>
         <Pagination.Last onClick={() => handlePageChange(totalPages)}/>
-    </Pagination>
+      </Pagination>
+      )}
       <MovieCardModal
           show={modalShow}
           onHide={() => setModalShow(false)}
