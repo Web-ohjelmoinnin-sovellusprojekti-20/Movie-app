@@ -128,6 +128,7 @@ useEffect(() => {
           console.log("checked")
           try{
             alert("Movie " + movie.title + " added to Favourites!")
+            console.log("Email : " + account.email + " Movie : " + movie.title)
             const favResponse = await axios.post('http://localhost:3001/favourites/append', {
               email : account.email,
               movie_name : movie.title

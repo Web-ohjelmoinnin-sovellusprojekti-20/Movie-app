@@ -26,13 +26,14 @@ const getFavourites = async(req, res) => {
 }
 
 const appendList = async(req, res) => {
-    console.log("Hello?")
     try {
         const { email, movie_name } = req.body
         
         await appendToFavorite(email,movie_name);
         return res.status(200).json({ message: "Favourite list updated succesfully"})
     } catch (error) {
+        res.status(500).json({error})
+        console.error(error)
         return next(error);
     }
 }
