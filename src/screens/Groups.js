@@ -4,6 +4,7 @@ import { Button, Container, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import { useAccount } from '../context/useAccount.js';
+import { fetchGroupMembers } from './Group_page.js';
 export default function Groups() {
 
   const [groups, setGroups] = useState([]);
@@ -12,13 +13,19 @@ export default function Groups() {
   const navigate = useNavigate();
   const {account} = useAccount();
 
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState('');
+
   //fetch all groups
   useEffect(() => {
     const fetchGroups = async () => {
       try {
         const response = await axios.get('http://localhost:3001/groups/all');
         setGroups(response.data);
-        setIconStates(Array(response.data.length).fill(false));
+        const savedStates = JSON.parse(localStorage.getItem('iconStates')) || [];
+        const initialIconStates = response.data.map((_, index) => savedStates[index] || false);
+        setIconStates(initialIconStates);
       } catch (err) {
         console.error('Error fetching groups:', err);
       }
@@ -63,31 +70,56 @@ export default function Groups() {
     }
   };
 
-  // Handle joining a group
-  const handleJoinGroup = async (groupOwnerEmail) => {
-    const memberEmail = localStorage.getItem('email');
+  //handle group joining and icon state
+  const handleClick = (index, e, group) => {
+    handleIconClick(index, e);
+    handleJoinGroup(group.id);
+  };
+
+  //handle joining a group
+  const handleJoinGroup = async (groupId, owner_email) => {
+    if (!account) {
+      alert('Please log in to be able to join groups.');
+      return;
+  }
+    const memberEmail = account?.email || localStorage.getItem('email');
+
+    if (!memberEmail) {
+      alert('You must be logged in to join a group.');
+      return;
+    }
 
     try {
-      await axios.post('http://localhost:3001/groups/join', {
-        group_owner_email: groupOwnerEmail,
+      const response = await axios.post(`http://localhost:3001/groups/${groupId}/join`, {
+        group_id: groupId,
         member_email: memberEmail,
       });
-      alert('Successfully joined the group!');
+
+      if (response.status === 200) {
+        alert('Successfully joined the group!');
+        await fetchGroupMembers(groupId, setMembers, setLoading, setRole, account, owner_email);
+      } else {
+        alert('Failed to join the group.');
+      }
     } catch (err) {
       console.error('Error joining group:', err);
     }
   };
 
-  const handleGroupClick = (group) => {
-    console.log(group)
-    navigate("/group_page", { state: { groupId: group.id, groupName: group.group_name, owner_email: group.owner_email } });
-  };
-
+  //handle icon click and state saving
   const handleIconClick = (index, e) => {
     e.stopPropagation();
     const updatedIconStates = [...iconStates];
     updatedIconStates[index] = !updatedIconStates[index];
+
+    localStorage.setItem(`iconStates`, JSON.stringify(updatedIconStates));
+
     setIconStates(updatedIconStates);
+  };
+
+  const handleGroupClick = (group) => {
+    console.log(group)
+    navigate("/group_page", { state: { groupId: group.id, groupName: group.group_name, owner_email: group.owner_email } });
   };
 
   return (
@@ -123,7 +155,7 @@ export default function Groups() {
             {group.group_name}
             <span
             variant="btn-primary" type="button" className="d-flex align-items-center ms-auto"
-            onClick={(e) => handleIconClick(index, e)}
+            onClick={(e) => handleClick(index, e, group)}
             >
               {iconStates[index] ? (
                 <i className="bi bi-person-fill-check"></i>
