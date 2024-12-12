@@ -12,7 +12,6 @@ const getMovieByName = async (name, genreIds, Page) => {
         const response = await axios.get(url + name + '&language=en-US&page=' + Page + key )
         let movies = response.data.results
         const totalPages = response.data.total_pages
-        console.log(totalPages)
         if (genreIds.length > 0) {
             movies = movies.filter(movie => {
                 const flatIds = movie.genre_ids.flat();
