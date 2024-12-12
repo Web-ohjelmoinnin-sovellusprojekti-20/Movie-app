@@ -18,6 +18,22 @@ const fetchAllGroups = async (req, res) => {
     }
 };
 
+//fetch owned groups for account page
+const fetchUserGroups = async (req, res) => {
+    const { user_email } = req.params;
+    console.log('Fetching groups for:', req.params);
+    try {
+        const query = `SELECT g.id, g.owner_email, g.group_name FROM my_groups g LEFT JOIN group_members gm ON g.id = gm.group_id WHERE g.owner_email = $1 OR gm.member_email = $1`;
+        const result = await pool.query(query, [user_email]);
+        console.log('Groups fetched:', result.rows);
+
+        res.status(200).json(result.rows);
+    } catch (err) {
+        console.error('Error fetching owned groups:', err.message);
+        res.status(500).json({ error: 'Failed to fetch user groups' });
+    }
+};
+
 //create group
 const createGroup = async (req, res) => {
     const { owner_email, group_name } = req.body;
@@ -85,28 +101,27 @@ const deleteGroup = async (req, res) => {
 
 //join group
 const joinGroup = async (req, res) => {
-    const { group_id, member_email } = req.body;
+    const { groupId } = req.params;
+    const { member_email } = req.body;
 
-    if (!group_id ||!member_email) {
-        return res.status(400).json({ error: "Group owner email and member email are required" });
+    if (!groupId ||!member_email) {
+        return res.status(400).json({ error: "Group ID and member email are required" });
     }
 
     try {
         const checkQuery = 'SELECT 1 FROM group_members WHERE group_id = $1 AND member_email = $2';
-        const checkResult = await pool.query(checkQuery, [group_id, member_email]);
+        const checkResult = await pool.query(checkQuery, [groupId, member_email]);
 
         if (checkResult.rowCount > 0) {
             return res.status(400).json({ error: "Member is already part of the group" });
         }
 
-        const insertQuery =
-        `INSERT INTO group_members (group_id, member_email) VALUES ($1, $2)`;
-
-        await pool.query(insertQuery, [group_id, member_email]);
+        const insertQuery =`INSERT INTO group_members (group_id, member_email) VALUES ($1, $2)`;
+        await pool.query(insertQuery, [groupId, member_email]);
 
         res.status(200).json({ message: "Member joined the group successfully" });
     } catch (err) {
-    console.log(err);
+    console.log('Error deleting group', err);
     res.status(500).json({ error: 'Failed to join group' });
     }
 };
@@ -172,4 +187,4 @@ const fetchAllMembers = async (req, res) => {
 };
 
 
-export { fetchAllGroups, createGroup, deleteGroup, joinGroup, removeMember, leaveGroup, fetchAllMembers };
+export { fetchAllGroups, createGroup, deleteGroup, joinGroup, removeMember, leaveGroup, fetchAllMembers, fetchUserGroups };

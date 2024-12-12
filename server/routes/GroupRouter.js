@@ -1,10 +1,13 @@
 import { Router } from 'express';
-import { fetchAllGroups, createGroup, deleteGroup, joinGroup, removeMember, leaveGroup, fetchAllMembers } from '../controllers/GroupController.js';
+import { fetchAllGroups, createGroup, deleteGroup, joinGroup, removeMember, leaveGroup, fetchAllMembers, fetchUserGroups } from '../controllers/GroupController.js';
 
 const router = new Router();
 
 //fetch groups
 router.get('/all', fetchAllGroups);
+
+//fetch owned groups
+router.get('/user/:user_email', fetchUserGroups);
 
 //create group
 router.post('/create', createGroup);

@@ -21,6 +21,33 @@ const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
 
 const UserRoleContext = createContext();
 
+export const fetchGroupMembers = async (groupId, setMembers, setLoading, setRole, account, owner_email) => {
+    setLoading(true);
+    try {
+        if (account && owner_email) {
+            if (account.email === owner_email) {
+                setRole("Owner");
+                console.log("Owner");
+            } else {
+                setRole("Member");
+                console.log("Member");
+            }
+        }
+
+        if (groupId) {
+                const response = await axios.get(`http://localhost:3001/groups/${groupId}/members`);
+                setMembers(response.data);
+                console.log(response.data);
+        } else {
+            console.log('No group ID available');
+        }
+    } catch (error) {
+        console.error("Error fetching group members", error);
+    } finally {
+        setLoading(false);
+    }
+};
+
 export default function Group_page() {
 
     const [members, setMembers] = useState([]);
@@ -35,34 +62,9 @@ export default function Group_page() {
     console.log('Account Email:', account?.email);
 
     useEffect(() => {
-        const fetchGroupMembers = async () => {
-            setLoading(true);
-            try {
-                if (account && owner_email) {
-                    if (account.email === owner_email) {
-                        setRole("Owner");
-                        console.log("Owner");
-                    } else {
-                        setRole("Member");
-                        console.log("Member");
-                    }
-                }
-
-                if (groupId) {
-                        const response = await axios.get(`http://localhost:3001/groups/${groupId}/members`);
-                        setMembers(response.data);
-                        console.log(response.data);
-                } else {
-                    console.log('No group ID available');
-                }
-            } catch (error) {
-                console.error("Error fetching group members", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchGroupMembers();
+        if (groupId) {
+            fetchGroupMembers(groupId, setMembers, setLoading, setRole, account, owner_email);
+        }
         console.log(role);
     }, [groupId, owner_email, account?.email]);
 
@@ -70,8 +72,9 @@ export default function Group_page() {
         return <div>Loading...</div>;
     };
 
-    const handleOpenProfile = (memberName) => {
-        navigate("/account", { state: { memberName: memberName } });
+    const handleOpenProfile = (members) => {
+        console.log('Navigating to profile of:', members.member_email);
+        navigate("/account", { state: { email: members.member_email } });
     };
 
     const handleDeleteGroup = async () => {
@@ -101,8 +104,21 @@ export default function Group_page() {
         }
     };
 
+    const handleRemoveFromGroup = async () => {
+        if (window.confirm('Are you sure you want to remove this member?')) {
+            try {
+                await axios.delete(`http://localhost:3001/groups/${groupId}/members/${account.email}`);
+                alert('Member removed from group');
+                fetchGroupMembers(groupId, setMembers, setLoading, setRole, account, owner_email);
+            } catch (error) {
+                console.error('Error removing member from group', error);
+                alert('Failed to remove member');
+            }
+        }
+    };
+
     return (
-        <UserRoleContext.Provider value={{ role, handleOpenProfile, handleDeleteGroup, handleLeaveGroup }}>
+        <UserRoleContext.Provider value={{ role, handleOpenProfile, handleDeleteGroup, handleLeaveGroup, handleRemoveFromGroup }}>
             <div className="page-container">
                 <Container>
                     <div className="header-container">
@@ -136,7 +152,7 @@ export default function Group_page() {
 };
 
 function MemberList({ members }) {
-    const { role, handleOpenProfile } = useContext(UserRoleContext);
+    const { role, handleOpenProfile, handleRemoveFromGroup } = useContext(UserRoleContext);
 
     return (
         <div>
@@ -154,7 +170,7 @@ function MemberList({ members }) {
                             {role === "Owner" ? (
                                 <>
                                 <Dropdown.Item onClick={ () => handleOpenProfile(members)}>Check profile</Dropdown.Item>
-                                <Dropdown.Item>Remove from group</Dropdown.Item>
+                                <Dropdown.Item onClick={ () => handleRemoveFromGroup(members)}>Remove from group</Dropdown.Item>
                                 </>
                             ) : (
                                 <>
