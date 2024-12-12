@@ -2,7 +2,7 @@ import { ApiError } from '../helpers/ApiError.js';
 import { compare, hash } from 'bcrypt';
 import pkg from 'jsonwebtoken';
 import { contains_capital_letter_and_a_number } from '../helpers/utils.js';
-import { insertAccount, selectAccountByEmail, deleteAccountByEmail } from '../models/Account.js';
+import { insertAccount, selectAccountByEmail, deleteAccountByEmail, initializeFavorites } from '../models/Account.js';
 import { request, response } from 'express';
 
 const { sign } = pkg;
@@ -38,6 +38,7 @@ const postAccountRegistration = async (request, response, next) => {
         //console.log('Hashing done');
         const accountFromDb = await insertAccount(email, hashedPassword);
         const account = await accountFromDb.rows[0];
+        await initializeFavorites(email);
         return response.status(201).json(createAccountObject(account.email));
     } catch (error) {
         return next(error);
