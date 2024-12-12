@@ -18,7 +18,11 @@ const selectAccountByEmail = async (email) => {
 };
 
 const deleteAccountByEmail = async (email) => {
-    return await pool.query('delete from account where email = $1', [email]);
+    return await pool.query('delete from account using favorite, my_groups, review where account.email = favorite.email and account.email = my_groups.owner_email and account.email = $1', [email]);
 };
 
-export { deleteAccountByEmail, insertAccount, selectAccountByEmail };
+const initializeFavorites = async (email) => {
+    return await pool.query("insert into favorite (email, current_visibility) values ($1, 'HIDDEN')", [email]);
+};
+
+export { deleteAccountByEmail, insertAccount, selectAccountByEmail, initializeFavorites };
