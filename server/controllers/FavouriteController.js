@@ -1,7 +1,21 @@
 import { appendToFavorite, deleteFromFavorite, getVisibleFavorites } from '../models/Favorite.js';
 
-
-const getFavourites = async(req, res, next) => {
+/*
+const initializeEmail = async(req, res) => {
+    try {
+        const { email } = req.body
+        const query = `
+            INSERT INTO FAVORITE (email)
+            VALUES ($1)
+        `
+        await pool.query(query, [email])
+        res.status(200).json({ message: "Email initialized in favorites"})
+    } catch (error) {
+        res.status(500).json({error})
+    }
+}
+*/
+const getFavourites = async(req, res) => {
     try {
         const result = await getVisibleFavorites();
         return res.status(200).json(result.rows)
@@ -32,5 +46,5 @@ const removeFromList = async(req, res, next) => {
     }
 }
 
-export { appendList, getFavourites, removeFromList };
+export { appendList, getFavourites, initializeEmail, removeFromList };
 
