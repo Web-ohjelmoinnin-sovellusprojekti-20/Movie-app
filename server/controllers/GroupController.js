@@ -140,6 +140,8 @@ const removeMember = async (req, res) => {
             return res.status(404).json({ error: 'Member not found in this group' });
         }
 
+        await pool.query('DELETE FROM join_requests WHERE group_id = $1 AND request_email = $2', [groupId, member_email]);
+
         res.status(200).json({ message: 'Member removed from group successfully' });
     } catch (err) {
         console.error('Error removing member:', err);
@@ -165,6 +167,8 @@ const leaveGroup = async (req, res) => {
             return res.status(404).json({ error: 'Member not found in the group' });
         }
 
+        await pool.query('DELETE FROM join_requests WHERE group_id = $1 AND request_email = $2', [groupId, member_email]);
+
         res.status(200).json({ message: "Member left the group successfully" });
     } catch (err) {
         console.error('Error leaving group:', err);
@@ -187,4 +191,116 @@ const fetchAllMembers = async (req, res) => {
 };
 
 
-export { fetchAllGroups, createGroup, deleteGroup, joinGroup, removeMember, leaveGroup, fetchAllMembers, fetchUserGroups };
+
+//join request handling:
+
+//sending request
+const sendJoinRequest = async (req, res) => {
+    console.log("Request parameters:", req.params);
+    console.log("Request body:", req.body);
+
+    const { groupId } = req.params;
+    const { request_email } = req.body;
+
+    console.log("Received join request with groupId:", groupId, "and request_email:", request_email);
+
+    if (!groupId || !request_email) {
+        return res.status(400).json({ error: "Group ID and request email are required" });
+    }
+
+    try {
+        //check if the user is already a member
+        const checkQuery = 'SELECT 1 FROM group_members WHERE group_id = $1 AND member_email = $2';
+        const checkResult = await pool.query(checkQuery, [groupId, request_email]);
+
+        if (checkResult.rowCount > 0) {
+            return res.status(400).json({ error: "User is already a member of this group" });
+        }
+
+        //check if request already exists
+        const requestCheckQuery = 'SELECT status FROM join_requests WHERE group_id = $1 AND request_email = $2';
+        const requestCheckResult = await pool.query(requestCheckQuery, [groupId, request_email]);
+
+        if (requestCheckResult.rowCount > 0) {
+            const requestStatus = requestCheckResult.rows[0].status;
+
+            //reset request
+            if (requestStatus === 'DECLINED') {
+                await pool.query('UPDATE join_requests SET status = $3 WHERE group_id = $1 AND request_email = $2 AND status = $4', [groupId, request_email, 'PENDING', 'DECLINED']);
+                return res.status(200).json({ error: "Your previous request was declined. You may try again." });
+            }
+
+            if (requestStatus === 'PENDING') {
+                return res.status(400).json({ error: "Join request is already sent." });
+            }
+        }
+
+        //new request
+        const insertQuery = 'INSERT INTO join_requests (group_id, request_email, status) VALUES ($1, $2, $3)';
+        await pool.query(insertQuery, [groupId, request_email, 'PENDING']);
+
+        res.status(200).json({ message: 'Join request sent successfully' });
+    } catch (err) {
+        console.error('Error sending join request:', err.message);
+        res.status(500).json({ error: 'Failed to send join request' });
+    }
+};
+
+//accepting request
+const acceptJoinRequest = async (req, res) => {
+    const { groupId, requestEmail } = req.params;
+
+    try {
+        //update request status
+        const updateQuery = 'UPDATE join_requests SET status = $1 WHERE group_id = $2 AND request_email = $3';
+        const result = await pool.query(updateQuery, ['ACCEPTED', groupId, requestEmail]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Join request not found' });
+        }
+
+        await pool.query('INSERT INTO group_members (group_id, member_email) VALUES ($1, $2)', [groupId, requestEmail]);
+
+        res.status(200).json({ message: 'Join request accepted, member added to group' });
+    } catch (err) {
+        console.error('Error accepting join request:', err.message);
+        res.status(500).json({ error: 'Failed to accept join request' });
+    }
+};
+
+//declining request
+const declineJoinRequest = async (req, res) => {
+    const { groupId, requestEmail } = req.params;
+
+    try {
+        //update request status
+        const updateQuery = 'UPDATE join_requests SET status = $1 WHERE group_id = $2 AND request_email = $3';
+        const result = await pool.query(updateQuery, ['DECLINED', groupId, requestEmail]);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Join request not found' });
+        }
+
+        res.status(200).json({ message: 'Join request declined' });
+    } catch (err) {
+        console.error('Error declining join request:', err.message);
+        res.status(500).json({ error: 'Failed to decline join request' });
+    }
+};
+
+//fetch requests
+const fetchJoinRequests = async (req, res) => {
+    const { groupId } = req.params;
+
+    try {
+        const fetchQuery = 'SELECT request_email, status FROM join_requests WHERE group_id = $1 AND status = $2';
+        const result = await pool.query(fetchQuery, [groupId, 'PENDING']);
+
+        res.status(200).json(result.rows);
+    } catch (err) {
+        console.error('Error fetching join requests:', err.message);
+        res.status(500).json({ error: 'Failed to fetch join requests' });
+    }
+};
+
+export { fetchAllGroups, createGroup, deleteGroup, joinGroup, removeMember, leaveGroup, fetchAllMembers, fetchUserGroups, sendJoinRequest, acceptJoinRequest, declineJoinRequest, fetchJoinRequests };

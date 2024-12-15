@@ -13,6 +13,7 @@ const getFavourites = async(req, res) => {
         console.log(query, result.rows)
     } catch (error) {
         res.status(500).json({error})
+        console.error(error)
     }
 }
 

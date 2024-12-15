@@ -1,3 +1,4 @@
+drop table if exists join_requests;
 drop table if exists group_members;
 drop table if exists my_groups;
 drop table if exists favorite;
@@ -6,6 +7,7 @@ drop table if exists account;
 drop type if exists visibility;
 
 create type visibility as enum('HIDDEN', 'VISIBLE');
+create type request_status as enum('PENDING', 'ACCEPTED', 'DECLINED');
 
 
 create table account (
@@ -47,4 +49,15 @@ CREATE TABLE group_members (
     CONSTRAINT "FK_group_members_member_email" FOREIGN KEY (member_email)
     REFERENCES account(email) on delete cascade,
     primary key (group_id, member_email)
+);
+
+CREATE TABLE join_requests (
+    group_id INT NOT NULL,
+    request_email VARCHAR(255) NOT NULL,
+    status request_status NOT NULL DEFAULT 'PENDING',
+    CONSTRAINT "FK_join_requests_group_id" FOREIGN KEY (group_id)
+    REFERENCES my_groups(id) ON DELETE CASCADE,
+    CONSTRAINT "FK_join_requests_request_email" FOREIGN KEY (request_email)
+    REFERENCES account(email) ON DELETE CASCADE,
+    PRIMARY KEY (group_id, request_email)
 );

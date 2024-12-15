@@ -21,6 +21,18 @@ const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
 
 const UserRoleContext = createContext();
 
+//fetch join requests for group owner
+const fetchJoinRequests = async (groupId, setJoinRequests) => {
+    try {
+        const response = await axios.get(`http://localhost:3001/groups/${groupId}/join-requests`);
+        const joinRequests = response.data;
+        setJoinRequests(joinRequests);
+        console.log('Pending Join Requests:', joinRequests);
+    } catch (err) {
+        console.error('Error fetching join requests:', err);
+    }
+    };
+
 export const fetchGroupMembers = async (groupId, setMembers, setLoading, setRole, account, owner_email) => {
     setLoading(true);
     try {
@@ -57,6 +69,7 @@ export default function Group_page() {
     const [role, setRole] = useState("");
     const { account } = useAccount();
     const [loading, setLoading] = useState(true);
+    const [joinRequests, setJoinRequests] = useState([]);
 
     console.log('Group ID:', groupId, 'Group Name:', groupName, 'Owner Email:', owner_email);
     console.log('Account Email:', account?.email);
@@ -64,9 +77,12 @@ export default function Group_page() {
     useEffect(() => {
         if (groupId) {
             fetchGroupMembers(groupId, setMembers, setLoading, setRole, account, owner_email);
+            if (role === 'Owner') {
+                fetchJoinRequests(groupId, setJoinRequests);
+            }
         }
         console.log(role);
-    }, [groupId, owner_email, account?.email]);
+    }, [groupId, owner_email, account?.email, role]);
 
     if (loading) {
         return <div>Loading...</div>;
@@ -104,10 +120,10 @@ export default function Group_page() {
         }
     };
 
-    const handleRemoveFromGroup = async () => {
+    const handleRemoveFromGroup = async (member_email) => {
         if (window.confirm('Are you sure you want to remove this member?')) {
             try {
-                await axios.delete(`http://localhost:3001/groups/${groupId}/members/${account.email}`);
+                await axios.delete(`http://localhost:3001/groups/${groupId}/members/${member_email}`);
                 alert('Member removed from group');
                 fetchGroupMembers(groupId, setMembers, setLoading, setRole, account, owner_email);
             } catch (error) {
@@ -124,7 +140,17 @@ export default function Group_page() {
                     <div className="header-container">
                         <h1>Welcome to {groupName || "Loading group..."}</h1>
                         <div className="alert alert-info" role="alert">
-                            This is a notification board.
+                        This is a notification board.
+                        <JoinRequestsHandler
+                            groupId={groupId}
+                            setMembers={setMembers}
+                            setLoading={setLoading}
+                            setRole={setRole}
+                            account={account}
+                            owner_email={owner_email}
+                            joinRequests={joinRequests}
+                            setJoinRequests={setJoinRequests}
+                        />
                         </div>
                     </div>
                 </Container>
@@ -170,7 +196,7 @@ function MemberList({ members }) {
                             {role === "Owner" ? (
                                 <>
                                 <Dropdown.Item onClick={ () => handleOpenProfile(members)}>Check profile</Dropdown.Item>
-                                <Dropdown.Item onClick={ () => handleRemoveFromGroup(members)}>Remove from group</Dropdown.Item>
+                                <Dropdown.Item onClick={ () => handleRemoveFromGroup(members.member_email)}>Remove from group</Dropdown.Item>
                                 </>
                             ) : (
                                 <>
@@ -205,3 +231,48 @@ function RoleBasedActions() {
         </div>
     );
 };
+
+const JoinRequestsHandler = ({ groupId, joinRequests, setJoinRequests, setMembers, setLoading, setRole, account, owner_email }) => {
+    const handleAcceptRequest = async (requestEmail) => {
+      try {
+        await axios.patch(`http://localhost:3001/groups/${groupId}/join/${requestEmail}/accept`);
+        alert('Request accepted!');
+        setJoinRequests(prevRequests => prevRequests.filter(req => req.request_email !== requestEmail)); //remove accepted request
+
+        fetchGroupMembers(groupId, setMembers, setLoading, setRole, account, owner_email);
+      } catch (err) {
+        console.error('Error accepting request:', err);
+      }
+    };
+  
+    const handleDeclineRequest = async (requestEmail) => {
+      try {
+        await axios.patch(`http://localhost:3001/groups/${groupId}/join/${requestEmail}/decline`);
+        alert('Invite declined!');
+        setJoinRequests(prevRequests => prevRequests.filter(req => req.request_email !== requestEmail)); //remove declined request
+      } catch (err) {
+        console.error('Error declining request:', err);
+      }
+    };
+  
+    return (
+      <div>
+        {joinRequests.length > 0 ? (
+          <div>
+            <h6>Pending join requests:</h6>
+            {joinRequests.map((request) => (
+              <div key={request.request_email} className="alert alert-warning d-flex justify-content-between">
+                <span>New join request from user {request.request_email}</span>
+                <div>
+                  <Button variant="success" onClick={() => handleAcceptRequest(request.request_email)}>Accept</Button>
+                  <Button variant="danger" onClick={() => handleDeclineRequest(request.request_email)}>Decline</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div>No pending requests.</div>
+        )}
+      </div>
+    );
+  };
