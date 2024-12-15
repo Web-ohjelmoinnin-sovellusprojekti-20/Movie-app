@@ -46,5 +46,5 @@ const removeFromList = async(req, res, next) => {
     }
 }
 
-export { appendList, getFavourites, initializeEmail, removeFromList };
+export { appendList, getFavourites, removeFromList };
 

@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
-import { Carousel, Form, Modal } from 'react-bootstrap';
+import { Card, Carousel, Container, Form, Modal } from 'react-bootstrap';
 import Dropdown from 'react-bootstrap/Dropdown';
+import { useLocation } from 'react-router-dom';
 import { getMovieByName } from '../components/movieAPI';
 import placeholderImage from '../images/placeholder-img.png';
 import './Home.css';
@@ -14,6 +15,9 @@ export default function Home() {
   const [arrowsVisible, setArrowsVisible] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [activeIndex, setActiveIndex] = useState(0)
+
+  const location = useLocation()
+  const { showing } = location.state || {}
 
   const genreMap = {
     'Action': 28,
@@ -86,6 +90,16 @@ export default function Home() {
 
   return (
     <div>
+      <div>
+        <Container>
+          <Card>
+            <Card.Header>{showing.title}</Card.Header>
+            <Card.Body>
+              <Card.Text>{showing.auditorium}</Card.Text>
+            </Card.Body>
+          </Card>
+        </Container>
+      </div>
       <h2 className="text-center">Search movies for a quick overview</h2>
       <Form onSubmit={searchHandle} className="form-submit">
         <div 

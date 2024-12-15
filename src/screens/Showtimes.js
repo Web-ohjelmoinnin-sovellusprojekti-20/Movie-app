@@ -1,6 +1,7 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Card, Col, Container, Dropdown, Row } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import { xml2js } from 'xml-js';
 import { getAll, getDate } from '../components/kinoAPI';
 import PaginationComp from '../components/Pagination.js';
@@ -15,11 +16,16 @@ export default function ShowTimes() {
   const [showingDate, setShowingDate] = useState(null)
   const [showingData, setShowingData] = useState(null)
   const [page, setPage] = useState(1)
+  const navigate = useNavigate()
 
   const itemsPerPage = 4
   const startIndex = (page - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
   const paginatedData = showingData ? showingData.slice(startIndex, endIndex) : []
+
+  const transferMovieData = (showing) => {
+    navigate('/', { state: { showing } })
+  }
 
   const handleKinoData = async() => {
     if (theater && showingDate) {
@@ -89,34 +95,37 @@ export default function ShowTimes() {
         <Container>
           {showingData && (
             <Row>
-              {paginatedData.map((movie, index) => (
+              {paginatedData.map((showing, index) => (
                 <Col lg={3} md={3} sm={6} xs={12} key={index}>
                   <Card>
-                    <Card.Img src={movie.image} fluid></Card.Img>
+                    <Card.Img src={showing.image} fluid></Card.Img>
                     <br/>
                     <Card.Body className="showings">
                       <Card.Title>
                         <u>
                           <a
-                            href={movie.link}
+                            href={showing.link}
                             target="_blank"
-                          >{movie.title}</a></u>
+                          >{showing.title}</a></u>
                         </Card.Title>
                       <br/>
+                      <button onClick={() => transferMovieData(showing)}>
+                        temp
+                      </button>
                       <Card.Text>
                         <strong>Theatre: {theaterName || "Select theatre"}</strong>
                         <br/><br/>
-                        <strong>Auditorium: {movie.auditorium || "N/A"}</strong>
+                        <strong>Auditorium: {showing.auditorium || "N/A"}</strong>
                         <br/><br/>
                         <strong>Date: {showingDate || "Select date"}</strong>
                         <br/><br/>
-                        <strong>Starts: {movie.formattedTime}</strong>
+                        <strong>Starts: {showing.formattedTime}</strong>
                         <br/><br/>
-                        <strong>Ends: {movie.formattedTime2}</strong>
+                        <strong>Ends: {showing.formattedTime2}</strong>
                         <br/><br/>
-                        <strong>Length: {movie.minutes} minutes</strong>
+                        <strong>Length: {showing.minutes} minutes</strong>
                         <br/><br/>
-                        <strong>Genre: {movie.genre || "N/A"}</strong>
+                        <strong>Genre: {showing.genre || "N/A"}</strong>
                       </Card.Text>
                     </Card.Body>
                   </Card>
