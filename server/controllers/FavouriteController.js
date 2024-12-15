@@ -1,52 +1,51 @@
-import { pool } from '../helpers/db.js';
+import { appendToFavorite, deleteFromFavorite, getVisibleFavorites } from '../models/Favorite.js';
 
-
-const getFavourites = async(req, res) => {
+/*
+const initializeEmail = async(req, res) => {
     try {
+        const { email } = req.body
         const query = `
-            SELECT email, UNNEST(movie_name) AS movie_name
-            FROM favorite
-            WHERE current_visibility = 'VISIBLE';
+            INSERT INTO FAVORITE (email)
+            VALUES ($1)
         `
-        const result = await pool.query(query)
-        res.status(200).json(result.rows)
-        console.log(query, result.rows)
+        await pool.query(query, [email])
+        res.status(200).json({ message: "Email initialized in favorites"})
     } catch (error) {
         res.status(500).json({error})
         console.error(error)
     }
 }
-
-const appendList = async(req, res) => {
+*/
+const getFavourites = async(req, res) => {
     try {
-        const { email, movie_name } = req.body
-        const query = `
-            UPDATE favorite
-            SET movie_name = array_append(movie_name, $1),
-                current_visibility = 'VISIBLE'
-            WHERE email = $2
-        `
-        await pool.query(query, [movie_name, email])
-        res.status(200).json({ message: "Favourite list updated succesfully"})
+        const result = await getVisibleFavorites();
+        return res.status(200).json(result.rows)
     } catch (error) {
-        res.status(500).json({error})
+        return next(error);
     }
 }
 
-const removeFromList = async(req, res) => {
+const appendList = async(req, res, next) => {
     try {
         const { email, movie_name } = req.body
-        const query = `
-            UPDATE favorite
-            SET movie_name = array_remove(movie_name, $1)
-            WHERE email = $2
-        `
-        await pool.query(query, [movie_name, email])
-        res.status(200).json({ message: "Movie succesfully removed from favourites"})
+        
+        await appendToFavorite(email,movie_name);
+        return res.status(200).json({ message: "Favourite list updated succesfully"})
     } catch (error) {
-        res.status(500).json({error})
+        return next(error);
     }
 }
 
-export { appendList, getFavourites, removeFromList };
+const removeFromList = async(req, res, next) => {
+    try {
+        const { email, movie_name } = req.body
+        
+        await deleteFromFavorite(email, movie_name);
+        return res.status(200).json({ message: "Movie succesfully removed from favourites"})
+    } catch (error) {
+        return next(error);
+    }
+}
+
+export { appendList, getFavourites, initializeEmail, removeFromList };
 
