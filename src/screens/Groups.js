@@ -71,40 +71,30 @@ export default function Groups() {
   };
 
   //handle group joining and icon state
-  const handleClick = (index, e, group) => {
+  const handleClick = async (index, e, group) => {
+    e.stopPropagation();
     handleIconClick(index, e);
-    handleJoinGroup(group.id);
-  };
 
-  //handle joining a group
-  const handleJoinGroup = async (groupId, owner_email) => {
-    if (!account) {
-      alert('Please log in to be able to join groups.');
-      return;
-  }
-    const memberEmail = account?.email || localStorage.getItem('email');
+    const requestData = {
+        request_email: account?.email || localStorage.getItem('email'),
+    };
+    console.log('Request Data:', requestData);
 
-    if (!memberEmail) {
-      alert('You must be logged in to join a group.');
-      return;
-    }
+    const groupId = group.id;
 
     try {
-      const response = await axios.post(`http://localhost:3001/groups/${groupId}/join`, {
-        group_id: groupId,
-        member_email: memberEmail,
-      });
-
-      if (response.status === 200) {
-        alert('Successfully joined the group!');
-        await fetchGroupMembers(groupId, setMembers, setLoading, setRole, account, owner_email);
-      } else {
-        alert('Failed to join the group.');
-      }
+        console.log("Sending join request for group ID:", groupId);
+        const response = await axios.post(`http://localhost:3001/groups/${groupId}/join`, requestData);
+        if (response.status === 200) {
+            alert('Join request sent successfully!');
+        } else {
+            alert('Failed to send join request');
+        }
     } catch (err) {
-      console.error('Error joining group:', err);
+        console.error('Error sending join request:', err);
+        alert('An error occurred while sending the join request.');
     }
-  };
+};
 
   //handle icon click and state saving
   const handleIconClick = (index, e) => {
@@ -117,10 +107,42 @@ export default function Groups() {
     setIconStates(updatedIconStates);
   };
 
-  const handleGroupClick = (group) => {
-    console.log(group)
-    navigate("/group_page", { state: { groupId: group.id, groupName: group.group_name, owner_email: group.owner_email } });
+  const handleGroupClick = async (group) => {
+    if (!account) {
+      alert("You must be logged in to access the group.");
+      return;
+    }
+  
+    const memberEmail = account?.email || localStorage.getItem('email');
+  
+    if (!memberEmail) {
+      alert("You must be logged in to access the group.");
+      return;
+    }
+
+    console.log("Fetching group members...");
+  
+    try {
+    const response = await axios.get(`http://localhost:3001/groups/${group.id}/members`);
+    const currentMembers = response.data;
+
+    const isMember = currentMembers.some((member) => member.member_email === memberEmail);
+
+      if (!isMember) {
+        alert("You must be part of the group to access the group page.");
+        return;
+    }
+
+    console.log("User is a group member. Navigating to the group page...");
+        navigate("/group_page", { 
+            state: { groupId: group.id, groupName: group.group_name, owner_email: group.owner_email } 
+        });
+      } catch (error) {
+        console.error("Error checking group membership:", error);
+        alert("Failed to validate group membership. Please try again later.");
+    }
   };
+  
 
   return (
     <Container>
