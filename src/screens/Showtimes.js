@@ -173,7 +173,7 @@ export default function ShowTimes() {
               ))}
             </Row>
           )}
-          <div className="pagination">
+          <div className="thePagination">
             <PaginationComp
               total={showingData ? Math.ceil(showingData.length / itemsPerPage) : 0}
               current={page}

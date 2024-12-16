@@ -5,6 +5,7 @@ drop table if exists favorite;
 drop table if exists review;
 drop table if exists account;
 drop type if exists visibility;
+drop type if exists request_status;
 
 create type visibility as enum('HIDDEN', 'VISIBLE');
 create type request_status as enum('PENDING', 'ACCEPTED', 'DECLINED');

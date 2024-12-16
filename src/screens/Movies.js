@@ -6,7 +6,10 @@ import Pagination from 'react-bootstrap/Pagination';
 import Modal from 'react-bootstrap/Modal';
 import { getMovieByName } from '../components/movieAPI';
 import placeholderImage from '../images/placeholder-img.png';
-//TODO: Pagination
+import { useAccount } from '../context/useAccount.js'
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
 export default function Movies() {
 
   const [movie, setMovie] = useState('')
@@ -15,15 +18,18 @@ export default function Movies() {
   const [selectedGenres, setSelectedGenres] = useState({})
   const [modalShow, setModalShow] = useState(false)
   const [selectedMovie, setSelectedMovie] = useState (null)
-  const [actionIcons, setActionIcons] = useState ({})
   const [currentPage, setCurrentPage] = useState (1)
   const [totalPages, setTotalPages] = useState (1)
+  const [showPages, setShowPages] = useState (false)
+  const {account} = useAccount();
+  const navigate = useNavigate();
 
 useEffect(() => {
   if (currentPage >= 1 && currentPage <= totalPages) {
     searchHandle(new Event('submit'));
   }
 }, [currentPage]); 
+
 
   const genreMap = {
     'Action': 28,
@@ -47,7 +53,7 @@ useEffect(() => {
     'Western': 37
   };
 
-// Voisi searchata pelkästään genrejen avulla
+
   const searchHandle = async (e) => {
       e.preventDefault();
       if(movie == ''){
@@ -55,6 +61,7 @@ useEffect(() => {
         console.log({moviesData})
         setmoviesData(null);
         setTotalPages(1)
+        setShowPages(false)
       }
       else{
         setResult("You searched for " + movie + ".")
@@ -71,12 +78,13 @@ useEffect(() => {
           setResult("Displaying results for " + movie + "...")
           setmoviesData(parsedData.movies)
           setTotalPages(parsedData.total_pages)
-
+          setShowPages(true)
         }
         else{
           setResult("No results found for " + movie + ".")
           setmoviesData(null)
           setTotalPages(1)
+          setShowPages(false)
         }
         console.log("testi");
       }
@@ -100,15 +108,47 @@ useEffect(() => {
       
   }, [])
 
-  const handleIconClick = (movieId, icon) => {
-        setActionIcons((prevState) =>({
-          ...prevState,
-          [movieId]: {
-          ...prevState[movieId],
-          [icon]: !prevState[movieId]?.[icon],
-        },
-      }))
+
+
+  const handleIconClick = async (movie, icon) => {
+
+      try {
+
+        const favResponse = await axios.get('http://localhost:3001/favourites/favourites');
+        const favoriteMovies = favResponse.data
+        .filter(fav => fav.email === account.email) 
+        .map(fav => fav.movie_name); 
+
+        const isFavorite = favoriteMovies.includes(movie.title);
+
+        if (icon === 'heart') {
+          if (isFavorite) {
+            alert("The movie " + movie.title + " has been removed from your favourites.");
+            await axios.delete('http://localhost:3001/favourites/remove', {
+                data: { email: account.email, movie_name: movie.title }
+            });
+        } else {
+            alert("The movie " + movie.title + " was added to your favourites!");
+            await axios.post('http://localhost:3001/favourites/append', {
+                email: account.email,
+                movie_name: movie.title
+            });
+        }
+    }
+      if (icon === 'star' && account.email) {
+        console.log("Redirecting to the Reviews page with the movie " + movie.id)
+          console.log("star checked")
+          alert("Redirecting you to the Reviews-page...")
+          navigate("/reviews",{ state: { movie_name: movie.title, formVisible: true } });
+      }
+      if(!account.email) {
+        alert("Please sign in.")
+      }
   }
+    catch(err){
+    console.error('Error fetching or updating favorites:', err);
+  }
+}
 
   const handlePageChange = (newPage) => {
     console.log("tuleva"+newPage)
@@ -143,10 +183,12 @@ useEffect(() => {
   }
 
   return (
-    <div>Movies
+    <div>
+      <h3 className='pageTitle'><strong>Movies</strong></h3>
+      <div className="searchProperties">
       <Form onSubmit={searchHandle}>
-        <Form.Control type="text" placeholder='Type here...'
-          className="mt2"
+        <Form.Control type="text" placeholder='Type here to search for movies...'
+          className="searchBar"
           value = {movie}
           onChange={handleInputChange}
         /> 
@@ -154,6 +196,7 @@ useEffect(() => {
       <Form>
       <Dropdown title="Test"
           id="test-dpdown"
+          className="filterMenu"
         >
         <Dropdown.Toggle id="dropdown-basic"
           variant="secondary">
@@ -166,6 +209,7 @@ useEffect(() => {
             'TV Movie', 'Thriller', 'War', 'Western'
           ].map(genre => (
         <Form.Check 
+          className='checkBoxes'
           type='checkbox'
           key={genre}
           label={genre}
@@ -176,8 +220,9 @@ useEffect(() => {
         </Dropdown.Menu>
       </Dropdown>
       </Form>
+      </div>
 
-      <label>{result}</label>
+      <label className='searchResults'>{result}</label>
 
       <Container>
           <Row>
@@ -193,12 +238,12 @@ useEffect(() => {
           />
             <div className='icons-overlay'>
             <i 
-              className={`bi ${actionIcons[movie.id]?.star ? 'bi-star-fill' : 'bi-star'}`} 
-              onClick={(e) => {e.stopPropagation(); handleIconClick(movie.id,'star');}}
+              className={'bi-star-fill'} 
+              onClick={(e) => {e.stopPropagation(); handleIconClick(movie,'star');}}
             ></i>
             <i 
-              className={`bi ${actionIcons[movie.id]?.heart ? 'bi-heart-fill' : 'bi-heart'}`}
-              onClick={(e) => {e.stopPropagation(); handleIconClick(movie.id,'heart');}}
+              className={'bi-heart-fill'}
+              onClick={(e) => {e.stopPropagation(); handleIconClick(movie,'heart');}}
             ></i>
           </div>
           <Card.Title className='movieTitle justify-content-center '>{movie.title}</Card.Title>
@@ -208,7 +253,8 @@ useEffect(() => {
         ))
       )}
       </Row>
-      </Container>    
+      </Container>  
+      {showPages && (  
       <Pagination className='pageList justify-content-center'>
         <Pagination.First onClick={() => handlePageChange(1)}/> 
         <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)}/> 
@@ -224,7 +270,8 @@ useEffect(() => {
         <Pagination.Next onClick={() => {handlePageChange(currentPage + 1); console.log("clicked" + currentPage)
         }}/>
         <Pagination.Last onClick={() => handlePageChange(totalPages)}/>
-    </Pagination>
+      </Pagination>
+      )}
       <MovieCardModal
           show={modalShow}
           onHide={() => setModalShow(false)}
