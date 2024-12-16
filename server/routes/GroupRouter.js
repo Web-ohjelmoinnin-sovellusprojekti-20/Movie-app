@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { fetchAllGroups, createGroup, deleteGroup, joinGroup, removeMember, leaveGroup, fetchAllMembers, fetchUserGroups, sendJoinRequest, acceptJoinRequest, declineJoinRequest, fetchJoinRequests } from '../controllers/GroupController.js';
+import { acceptJoinRequest, createGroup, declineJoinRequest, deleteGroup, fetchAllGroups, fetchAllMembers, fetchJoinRequests, fetchUserGroups, leaveGroup, removeMember, sendJoinRequest } from '../controllers/GroupController.js';
 
 const router = new Router();
 

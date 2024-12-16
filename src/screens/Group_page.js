@@ -1,9 +1,9 @@
-import './Group_page.css';
-import React, { useEffect, useState, createContext, useContext } from 'react';
-import { Button, Container, Dropdown, Card } from 'react-bootstrap';
-import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Button, Card, Container, Dropdown } from 'react-bootstrap';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAccount } from '../context/useAccount.js';
+import './Group_page.css';
 
 const CustomToggle = React.forwardRef(({ children, onClick }, ref) => (
     <i
@@ -70,9 +70,32 @@ export default function Group_page() {
     const { account } = useAccount();
     const [loading, setLoading] = useState(true);
     const [joinRequests, setJoinRequests] = useState([]);
+    const [showtimes, setShowtimes] = useState([])
 
     console.log('Group ID:', groupId, 'Group Name:', groupName, 'Owner Email:', owner_email);
     console.log('Account Email:', account?.email);
+
+    const removeButton = async(movie_title, theatre, auditorium, groupId) => {
+        try {
+            await axios.delete('http://localhost:3001/showtimes/remove', { data: { movie_title, theatre, auditorium, groupId }})
+        } catch (error) {
+            console.error('Error removing a showing from group page', error)
+        }
+    }
+
+      useEffect(() => {
+        const fetchData = async () => {
+          try {
+            const response = await axios.get('http://localhost:3001/showtimes/get', { params: { groupId } })
+            console.log('showtime response:',response.data)
+            const parsedShowTimes = response.data[0]?.showtime || []
+            setShowtimes(parsedShowTimes)
+          } catch (error) {
+            console.error('Error fetching showtimes', error)
+          }
+        }
+        fetchData()
+      }, [])
 
     useEffect(() => {
         if (groupId) {
@@ -160,7 +183,15 @@ export default function Group_page() {
                         <Card.Body>
                             <img src="..." className="card-img-top" alt="picture goes here"></img>
                             <hr />
-                            <Card.Text>Movie info goes here</Card.Text>
+                            {showtimes.map((showtime, index) => (
+                                <Card.Text key={index}>
+                                    <strong>Movie title:</strong> {showtime.movie_title} <br/>
+                                    <strong>Theatre:</strong> {showtime.theatre} <br/>
+                                    <strong>Starts at:</strong> {showtime.starts} <br/>
+                                    <strong>Auditorium:</strong> {showtime.auditorium} <br/>
+                                    <button onClick={() => removeButton(showtime.movie_title, showtime.theatre, showtime.auditorium)}></button>
+                                </Card.Text>
+                            ))}
                             <hr />
                             <Card.Text>Chosen showtime goes here</Card.Text>
                         </Card.Body>
