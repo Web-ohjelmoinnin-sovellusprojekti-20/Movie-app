@@ -120,23 +120,33 @@ useEffect(() => {
       }))
 
       if (icon === 'heart' && account.email) {
-        console.log("sup. Movie the heart got clicked on: " + movie.id) 
         if (actionIcons[movie.id]?.heart){
-          console.log("unchecked")
+          console.log("Heart unchecked for movie " + movie.title)
+          try{
+          alert("The movie " + movie.title + " has been removed from your favourites.")
+          const favRemove = await axios.post('http://localhost:3001/favourites/remove', {
+              email : account.email,
+              movie_name : movie.title
+          })
+          console.log(favRemove)
+          }
+          catch (err) {
+            console.log("Error removing a movie from favourites")
+          }
         }
         else{
-          console.log("checked")
+          console.log("Heart checked for movie " + movie.title)
           try{
-            alert("Movie " + movie.title + " added to Favourites!")
+            alert("The movie " + movie.title + " was added to your favourites!")
             console.log("Email : " + account.email + " Movie : " + movie.title)
-            const favResponse = await axios.post('http://localhost:3001/favourites/append', {
+            const favAdd = await axios.post('http://localhost:3001/favourites/append', {
               email : account.email,
               movie_name : movie.title
             })
-            console.log(favResponse)
+            console.log(favAdd)
           }
           catch (err) {
-            console.log("Error adding to favorites")
+            console.log("Error adding to favourites")
           }
         }
       }
