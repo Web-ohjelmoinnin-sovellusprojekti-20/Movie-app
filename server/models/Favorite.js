@@ -43,4 +43,5 @@ const deleteFromFavorite = async(email, movie_name) => {
     }
 };
 
-export { getVisibleFavorites, appendToFavorite, deleteFromFavorite };
+export { appendToFavorite, deleteFromFavorite, getVisibleFavorites };
+

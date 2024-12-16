@@ -1,19 +1,23 @@
-import React, { useCallback, useState } from 'react';
-import { Carousel, Form, Modal } from 'react-bootstrap';
+import axios from 'axios';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Button, Card, Carousel, Container, Form, Modal } from 'react-bootstrap';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { getMovieByName } from '../components/movieAPI';
 import placeholderImage from '../images/placeholder-img.png';
 import './Home.css';
 export default function Home() {
 
+  const groupIds = 5
+
   const [movie, setMovie] = useState('')
   const [moviesData, setmoviesData] = useState(null)
   const [selectedGenres, setSelectedGenres] = useState({})
   const [modalShow, setModalShow] = useState(false)
   const [selectedMovie, setSelectedMovie] = useState (null)
-  const [arrowsVisible, setArrowsVisible] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [activeIndex, setActiveIndex] = useState(0)
+  const [showtimes, setShowtimes] = useState([])
+  const [groupId, setGroupId] = useState(groupIds)
 
   const genreMap = {
     'Action': 28,
@@ -36,6 +40,20 @@ export default function Home() {
     'War': 10752,
     'Western': 37
   };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3001/showtimes/get', { params: {groupId}})
+        console.log('showtime response:',response.data)
+        const parsedShowTimes = response.data[0]?.showtime || []
+        setShowtimes(parsedShowTimes)
+      } catch (error) {
+        console.error('Error fetching showtimes', error)
+      }
+    }
+    fetchData()
+  }, [])
+
 
   const searchHandle = async (e) => {
       e.preventDefault();
@@ -86,6 +104,23 @@ export default function Home() {
 
   return (
     <div>
+      <div>
+        {showtimes.map((showtime, index) => (
+          <Container key={index}>
+            <Card>
+              <Card.Header><strong>Movie title:</strong> {showtime.movie_title}</Card.Header>
+              <Card.Body>
+                <Card.Text>
+                  <strong>Theatre:</strong> {showtime.theatre} <br />
+                  <strong>Starts at:</strong> {showtime.starts} <br/>
+                  <strong>Auditorium:</strong> {showtime.auditorium} <br/>
+                  <Button>Remove</Button>
+                </Card.Text>
+              </Card.Body>
+            </Card>
+          </Container>
+        ))}
+      </div>
       <h2 className="text-center">Search movies for a quick overview</h2>
       <Form onSubmit={searchHandle} className="form-submit">
         <div 

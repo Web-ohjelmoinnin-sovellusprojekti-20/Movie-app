@@ -16,7 +16,7 @@ const initializeEmail = async(req, res) => {
     }
 }
 
-const getFavourites = async(req, res) => {
+const getFavourites = async(req, res, next) => {
     try {
         const result = await getVisibleFavorites();
         return res.status(200).json(result.rows)
@@ -46,5 +46,5 @@ const removeFromList = async(req, res, next) => {
     }
 }
 
-export { appendList, getFavourites, initializeEmail, removeFromList };
+export { appendList, getFavourites, removeFromList };
 

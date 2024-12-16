@@ -1,9 +1,8 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Container, Image, Nav, Navbar, NavDropdown } from 'react-bootstrap';
+import { useAccount } from '../context/useAccount.js';
 import account_icon_placeholder from '../images/account_icon_placeholder.png';
 import './Header.css';
-import { AccountContext } from '../context/AccountContext.js';
-import { useAccount } from '../context/useAccount.js';
 
 export default function Header() {
   const { isLoggedIn, logOut } = useAccount();

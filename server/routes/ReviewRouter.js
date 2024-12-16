@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { deleteRemoveReview, postAddReview, fetchGetReviews } from '../controllers/ReviewController.js';
+import { deleteRemoveReview, fetchGetReviews, postAddReview } from '../controllers/ReviewController.js';
 import { auth } from '../helpers/auth.js';
 
 const router = new Router();

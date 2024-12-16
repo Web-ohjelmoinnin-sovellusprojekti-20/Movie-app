@@ -12,6 +12,7 @@ const getAll = async (theaterId, date) => {
 
         const movieData1 = xmlDoc.map(show => ({
             title: show.Title?._text,
+            theatre: show.Theatre?._text,
             image: show.Images?.EventLargeImagePortrait?._text,
             auditorium: show.TheatreAuditorium?._text,
             genre: show.Genres?._text || "Not specified",
@@ -56,7 +57,7 @@ const getAll = async (theaterId, date) => {
 const getDate = () => {
     const dates = []
     const today = new Date()
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 4; i++) {
       const date = new Date(today)
       date.setDate(today.getDate() + i)
       dates.push(date.getDate() + '.' + (date.getMonth() + 1) + '.' + date.getFullYear())

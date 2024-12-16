@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { appendList, getFavourites, removeFromList } from '../controllers/FavouriteController.js';
 
-
 const router = new Router()
 
 //get favourite lists
