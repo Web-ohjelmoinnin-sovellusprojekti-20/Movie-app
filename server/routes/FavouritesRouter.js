@@ -14,6 +14,6 @@ router.post('/append', appendList)
 router.delete('/remove', removeFromList)
 
 //initialize email in favorites table
-//routes.post('/initialize', initializeEmail)
+//router.post('/initialize', initializeEmail)
 
 export default router

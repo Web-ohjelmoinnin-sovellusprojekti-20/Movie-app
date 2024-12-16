@@ -16,11 +16,11 @@
     color: aqua;
 }
 
-.icons-overlay .bi-star:hover {
+.icons-overlay .bi-star-fill:hover {
     color: gold;
 }
 
-.icons-overlay .bi-heart:hover {
+.icons-overlay .bi-heart-fill:hover {
     color: tomato;
 }
 

@@ -2,21 +2,23 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Button, Container, Form, Image, Stack } from 'react-bootstrap';
 import { useAccount } from '../context/useAccount.js';
+import { useLocation } from 'react-router-dom';
 import account_icon_placeholder from '../images/account_icon_placeholder.png';
 import './Reviews.css';
 
 export default function Reviews() {
   const { isLoggedIn, account } = useAccount();
+  const location = useLocation();
   const [review, setReview] = useState({
     id: undefined,
     email: account.email ? account.email : undefined,
-    'movie_name': '',
+    'movie_name': location.state?.movie_name || '',
     review_text: '',
     stars: '0',
     date: ''
   });
   const [reviewFormVisibility, setReviewFormVisibility] = useState({
-    display: 'none'
+    display: location.state?.formVisible ? 'block' : 'none'
   });
   const [reviewButtonDisabled, setReviewButtonDisabled] = useState(false);
   const [reviews, setReviews] = useState([]);
@@ -122,7 +124,7 @@ export default function Reviews() {
         <Button
           variant='secondary'
           id='review-addition-button'
-          disabled={!isLoggedIn ? true : reviewButtonDisabled}
+          disabled={!isLoggedIn ? true : reviewButtonDisabled || reviewFormVisibility.display === 'block'}
           onClick={handleReviewButtonPress}
         >
           Add a review

@@ -9,7 +9,6 @@ import placeholderImage from '../images/placeholder-img.png';
 import { useAccount } from '../context/useAccount.js'
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-//TODO: genre alignment, integrointi käyttäjän kanssa
 
 export default function Movies() {
 
@@ -19,7 +18,6 @@ export default function Movies() {
   const [selectedGenres, setSelectedGenres] = useState({})
   const [modalShow, setModalShow] = useState(false)
   const [selectedMovie, setSelectedMovie] = useState (null)
-  const [actionIcons, setActionIcons] = useState ({})
   const [currentPage, setCurrentPage] = useState (1)
   const [totalPages, setTotalPages] = useState (1)
   const [showPages, setShowPages] = useState (false)
@@ -31,6 +29,7 @@ useEffect(() => {
     searchHandle(new Event('submit'));
   }
 }, [currentPage]); 
+
 
   const genreMap = {
     'Action': 28,
@@ -54,7 +53,7 @@ useEffect(() => {
     'Western': 37
   };
 
-// Voisi searchata pelkästään genrejen avulla
+
   const searchHandle = async (e) => {
       e.preventDefault();
       if(movie == ''){
@@ -108,63 +107,48 @@ useEffect(() => {
         }))
       
   }, [])
-// yhistät favouritesiin
-// Reviews lopulta vaa vie reviewsiin leffan nimen kanssa
-  const handleIconClick = async (movie, icon) => {
-        setActionIcons((prevState) =>({
-          ...prevState,
-          [movie.id]: {
-          ...prevState[movie.id],
-          [icon]: !prevState[movie.id]?.[icon],
-        },
-      }))
 
-      if (icon === 'heart' && account.email) {
-        if (actionIcons[movie.id]?.heart){
-          console.log("Heart unchecked for movie " + movie.title)
-          try{
-          alert("The movie " + movie.title + " has been removed from your favourites.")
-          const favRemove = await axios.post('http://localhost:3001/favourites/remove', {
-              email : account.email,
-              movie_name : movie.title
-          })
-          console.log(favRemove)
-          }
-          catch (err) {
-            console.log("Error removing a movie from favourites")
-          }
+
+
+  const handleIconClick = async (movie, icon) => {
+
+      try {
+
+        const favResponse = await axios.get('http://localhost:3001/favourites/favourites');
+        const favoriteMovies = favResponse.data
+        .filter(fav => fav.email === account.email) 
+        .map(fav => fav.movie_name); 
+
+        const isFavorite = favoriteMovies.includes(movie.title);
+
+        if (icon === 'heart') {
+          if (isFavorite) {
+            alert("The movie " + movie.title + " has been removed from your favourites.");
+            await axios.delete('http://localhost:3001/favourites/remove', {
+                data: { email: account.email, movie_name: movie.title }
+            });
+        } else {
+            alert("The movie " + movie.title + " was added to your favourites!");
+            await axios.post('http://localhost:3001/favourites/append', {
+                email: account.email,
+                movie_name: movie.title
+            });
         }
-        else{
-          console.log("Heart checked for movie " + movie.title)
-          try{
-            alert("The movie " + movie.title + " was added to your favourites!")
-            console.log("Email : " + account.email + " Movie : " + movie.title)
-            const favAdd = await axios.post('http://localhost:3001/favourites/append', {
-              email : account.email,
-              movie_name : movie.title
-            })
-            console.log(favAdd)
-          }
-          catch (err) {
-            console.log("Error adding to favourites")
-          }
-        }
-      }
+    }
       if (icon === 'star' && account.email) {
-        console.log("sup. Redirecting to the Reviews page with the movie " + movie.id)
-        if(actionIcons[movie.id]?.star){
-          console.log("star unchecked")
-        }
-        else{
+        console.log("Redirecting to the Reviews page with the movie " + movie.id)
           console.log("star checked")
-          alert("Review...?")
-          navigate("/reviews")
-        }
+          alert("Redirecting you to the Reviews-page...")
+          navigate("/reviews",{ state: { movie_name: movie.title, formVisible: true } });
       }
       if(!account.email) {
-        alert("Syö")
+        alert("Please sign in.")
       }
   }
+    catch(err){
+    console.error('Error fetching or updating favorites:', err);
+  }
+}
 
   const handlePageChange = (newPage) => {
     console.log("tuleva"+newPage)
@@ -254,11 +238,11 @@ useEffect(() => {
           />
             <div className='icons-overlay'>
             <i 
-              className={`bi ${actionIcons[movie.id]?.star ? 'bi-star-fill' : 'bi-star'}`} 
+              className={'bi-star-fill'} 
               onClick={(e) => {e.stopPropagation(); handleIconClick(movie,'star');}}
             ></i>
             <i 
-              className={`bi ${actionIcons[movie.id]?.heart ? 'bi-heart-fill' : 'bi-heart'}`}
+              className={'bi-heart-fill'}
               onClick={(e) => {e.stopPropagation(); handleIconClick(movie,'heart');}}
             ></i>
           </div>
