@@ -69,18 +69,6 @@ const addMovieToUser = (email, movies) => {
                     <li>{movie}</li>
                   </strong>
                 ))}
-                <Navbar className="navBox">
-                  <Container>
-                    <Navbar.Toggle />
-                    <Navbar.Collapse>
-                      <Nav>
-                        <NavDropdown>
-                          <NavDropdown.Item href={`/account/${encodeURIComponent(favourite.email)}`}>View account</NavDropdown.Item>
-                        </NavDropdown>
-                      </Nav>
-                    </Navbar.Collapse>
-                  </Container>
-                </Navbar>
               </Accordion.Body>
             </Accordion.Item>
           ))}
