@@ -1,6 +1,6 @@
 import { appendToFavorite, deleteFromFavorite, getVisibleFavorites } from '../models/Favorite.js';
 
-/*
+
 const initializeEmail = async(req, res) => {
     try {
         const { email } = req.body
@@ -15,7 +15,7 @@ const initializeEmail = async(req, res) => {
         console.error(error)
     }
 }
-*/
+
 const getFavourites = async(req, res) => {
     try {
         const result = await getVisibleFavorites();
@@ -25,7 +25,7 @@ const getFavourites = async(req, res) => {
     }
 }
 
-const appendList = async(req, res, next) => {
+const appendList = async(req, res) => {
     try {
         const { email, movie_name } = req.body
         
@@ -39,7 +39,6 @@ const appendList = async(req, res, next) => {
 const removeFromList = async(req, res, next) => {
     try {
         const { email, movie_name } = req.body
-        
         await deleteFromFavorite(email, movie_name);
         return res.status(200).json({ message: "Movie succesfully removed from favourites"})
     } catch (error) {

@@ -87,7 +87,7 @@ const addMovieToUser = (email, movies) => {
         </Accordion>
       )}
 
-      <div className="pagination">
+      <div className="aPagination">
         <PaginationComp
           total={Math.ceil(favouriteData.length / itemsPerPage)}
           current={page}
